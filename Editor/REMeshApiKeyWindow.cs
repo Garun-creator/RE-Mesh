@@ -2,16 +2,16 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
-    /// Prompt for a Polyfork API key.
+    /// Prompt for a REMesh API key.
     ///
     /// Shown automatically the first time a session is rate limited, and available any time
     /// from the gallery toolbar. A utility window rather than EditorUtility.DisplayDialog
     /// because the user needs somewhere to type.
     /// </summary>
-    public sealed class PolyforkApiKeyWindow : EditorWindow
+    public sealed class REMeshApiKeyWindow : EditorWindow
     {
         string _key = "";
         string _message;
@@ -31,24 +31,24 @@ namespace Polyfork.EditorTools
         /// Where the key in force actually came from.
         ///
         /// A key resolves from the environment, this window's EditorPrefs entry, or a
-        /// polyfork.key file, and EditorPrefs is shared by every project on the machine - so
+        /// remesh.key file, and EditorPrefs is shared by every project on the machine - so
         /// a key typed once, anywhere, silently applies everywhere afterwards. Finding
         /// yourself already signed in with no memory of doing it is unsettling rather than
         /// convenient, so the window says which one it is.
         /// </summary>
         static void DrawActiveKeySource()
         {
-            var key = PolyforkCredentials.Resolve(null, out var source);
+            var key = REMeshCredentials.Resolve(null, out var source);
             if (string.IsNullOrEmpty(key)) return;
 
             var where = source switch
             {
-                PolyforkCredentials.Source.Environment =>
-                    $"the {PolyforkCredentials.EnvironmentVariable} environment variable",
-                PolyforkCredentials.Source.EditorSettings =>
+                REMeshCredentials.Source.Environment =>
+                    $"the {REMeshCredentials.EnvironmentVariable} environment variable",
+                REMeshCredentials.Source.EditorSettings =>
                     "this editor's saved key (EditorPrefs, shared across all your projects)",
-                PolyforkCredentials.Source.StreamingAssets => $"StreamingAssets/{PolyforkCredentials.KeyFileName}",
-                PolyforkCredentials.Source.PersistentData => $"persistentDataPath/{PolyforkCredentials.KeyFileName}",
+                REMeshCredentials.Source.StreamingAssets => $"StreamingAssets/{REMeshCredentials.KeyFileName}",
+                REMeshCredentials.Source.PersistentData => $"persistentDataPath/{REMeshCredentials.KeyFileName}",
                 _ => "the component inspector"
             };
 
@@ -57,22 +57,22 @@ namespace Polyfork.EditorTools
                 EditorStyles.wordWrappedMiniLabel);
         }
 
-        [MenuItem("Tools/Polyfork/API Key…", priority = 1)]
-        [MenuItem("Window/Polyfork/API Key…", priority = 1101)]
-        public static PolyforkApiKeyWindow Open()
+        [MenuItem("Tools/MESHRA/API Key…", priority = 1)]
+        [MenuItem("Window/MESHRA/API Key…", priority = 1101)]
+        public static REMeshApiKeyWindow Open()
         {
-            var window = GetWindow<PolyforkApiKeyWindow>(utility: true, title: "Polyfork API key", focus: true);
-            PolyforkBrand.ApplyTitle(window, "Polyfork API key");
+            var window = GetWindow<REMeshApiKeyWindow>(utility: true, title: "MESHRA API Key", focus: true);
+            MeshRABrand.ApplyTitle(window, "MESHRA API Key");
             window.minSize = new Vector2(420f, 274f);
             window.maxSize = new Vector2(420f, 284f);
-            window._key = PolyforkKeySettings.Get();
+            window._key = REMeshKeySettings.Get();
             window.ShowUtility();
             return window;
         }
 
         void OnGUI()
         {
-            PolyforkBrand.DrawHeader("Lifts the remix cap and unlocks paid downloads");
+            REMeshBrand.DrawHeader("Lifts the remix cap and unlocks paid downloads");
             EditorGUILayout.Space(6f);
 
             if (_wasRateLimited)
@@ -89,7 +89,7 @@ namespace Polyfork.EditorTools
                             : $"in {_retryAfter.TotalSeconds:0} seconds";
 
                 EditorGUILayout.HelpBox(
-                    $"Polyfork limits remixes on unauthenticated connections, and this one has hit the cap. " +
+                    $"REMesh limits remixes on unauthenticated connections, and this one has hit the cap. " +
                     $"It resets {wait}.\n\n" +
                     "Adding an API key lifts the limit and unlocks downloads for paid assets.",
                     MessageType.Warning);
@@ -135,21 +135,21 @@ namespace Polyfork.EditorTools
                  * is to be given a key, the useful button is the one that produces one. The
                  * account is a step on the way, not the thing being asked for. */
                 if (GUILayout.Button("Create an API Key", GUILayout.Height(22f)))
-                    Application.OpenURL(PolyforkKeySettings.AccountUrl);
+                    Application.OpenURL(REMeshKeySettings.AccountUrl);
 
                 if (GUILayout.Button("See plans", GUILayout.Height(22f)))
-                    Application.OpenURL(PolyforkKeySettings.PricingUrl);
+                    Application.OpenURL(REMeshKeySettings.PricingUrl);
             }
 
             EditorGUILayout.Space(4f);
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                using (new EditorGUI.DisabledScope(!PolyforkKeySettings.HasKey))
+                using (new EditorGUI.DisabledScope(!REMeshKeySettings.HasKey))
                 {
                     if (GUILayout.Button("Remove key", GUILayout.Height(24f)))
                     {
-                        PolyforkKeySettings.Clear();
+                        REMeshKeySettings.Clear();
                         _key = "";
                         _message = "Key removed.";
                         _messageType = MessageType.Info;
@@ -168,8 +168,8 @@ namespace Polyfork.EditorTools
                 {
                     if (GUILayout.Button("Save key", GUILayout.Width(90f), GUILayout.Height(24f)))
                     {
-                        PolyforkKeySettings.Set(_key);
-                        _message = $"Saved {PolyforkCredentials.Redact(_key)}. The gallery will use it right away.";
+                        REMeshKeySettings.Set(_key);
+                        _message = $"Saved {REMeshCredentials.Redact(_key)}. The gallery will use it right away.";
                         _messageType = MessageType.Info;
                         _wasRateLimited = false;
                     }

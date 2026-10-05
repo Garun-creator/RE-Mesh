@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Puerts;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Runs asset modules on QuickJS via Puerts.
@@ -18,7 +18,7 @@ namespace Polyfork
     /// QuickJS module resolution would need a loader per asset and gives nothing back:
     /// there is exactly one dependency, and it is the same bundle every time.
     /// </summary>
-    public sealed class PolyforkPuertsRuntime : IPolyforkJsRuntime
+    public sealed class REMeshPuertsRuntime : IREMeshJsRuntime
     {
         /* Puerts 3.x marks JsEnv obsolete in favour of ScriptEnv, and this deliberately stays
          * on JsEnv. It is not a rename: its constructor checks the native papi version against
@@ -60,10 +60,10 @@ namespace Polyfork
             {
                 /* Our own loader, not Puerts's DefaultLoader: that one reads through
                  * Resources.Load, and the bootstrap is deliberately not in a Resources folder
-                 * - see PolyforkPuertsLoader for why. Checked before the engine is built,
+                 * - see REMeshPuertsLoader for why. Checked before the engine is built,
                  * because a loader that answers nothing fails inside native, and native
                  * reports it as a null string with no filename attached. */
-                var loader = new PolyforkPuertsLoader();
+                var loader = new REMeshPuertsLoader();
                 if (!loader.Verify(out var problem))
                     throw new InvalidOperationException(problem);
 
@@ -74,7 +74,7 @@ namespace Polyfork
 
                 // QuickJS has no btoa; the bridge base64-encodes its buffers with it.
                 step = "evaluating the base64 polyfill";
-                _env.Eval(Base64Polyfill, "polyfork-base64.js");
+                _env.Eval(Base64Polyfill, "remesh-base64.js");
 
                 // The bundle is built as an IIFE assigning `var THREE`, so it needs no
                 // rewriting - only promotion to globalThis, since `var` at eval scope is not
@@ -86,20 +86,20 @@ namespace Polyfork
                 _env.Eval("globalThis.THREE = THREE;", "three-global.js");
 
                 step = $"evaluating the bake bridge ({bridgeScript.Length} chars)";
-                _env.Eval(bridgeScript, "polyfork-bridge.js");
+                _env.Eval(bridgeScript, "remesh-bridge.js");
 
-                step = "binding __polyfork.bake";
-                _bake = _env.Eval<Func<string, string, string>>("__polyfork.bake");
+                step = "binding __remesh.bake";
+                _bake = _env.Eval<Func<string, string, string>>("__remesh.bake");
 
-                step = "binding __polyfork.describe";
-                _describe = _env.Eval<Func<string, string>>("__polyfork.describe");
+                step = "binding __remesh.describe";
+                _describe = _env.Eval<Func<string, string>>("__remesh.describe");
 
-                step = "binding __polyfork.has";
-                _has = _env.Eval<Func<string, bool>>("__polyfork.has");
+                step = "binding __remesh.has";
+                _has = _env.Eval<Func<string, bool>>("__remesh.has");
 
-                step = "binding __polyfork.__registerSource";
+                step = "binding __remesh.__registerSource";
                 _register = _env.Eval<Action<string, string>>(
-                    "(function(id, src){ globalThis.__polyfork.__registerSource(id, src); })");
+                    "(function(id, src){ globalThis.__remesh.__registerSource(id, src); })");
             }
             catch (Exception e)
             {
@@ -107,7 +107,7 @@ namespace Polyfork
                 throw new InvalidOperationException($"failed while {step}: {e.Message}", e);
             }
 
-            Debug.Log("[Polyfork] QuickJS runtime ready.");
+            Debug.Log("[REMesh] QuickJS runtime ready.");
         }
 
         public void LoadModule(string moduleId, string source)
@@ -115,7 +115,7 @@ namespace Polyfork
             if (!IsReady) throw new InvalidOperationException("Initialise the runtime first.");
             if (string.IsNullOrEmpty(source)) return;
 
-            _register(moduleId, PolyforkModuleTransform.ToScript(source));
+            _register(moduleId, REMeshModuleTransform.ToScript(source));
             _modules.Add(moduleId);
         }
 

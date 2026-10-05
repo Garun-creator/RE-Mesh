@@ -1,4 +1,4 @@
-// Polyfork bake bridge.
+// REMesh bake bridge.
 //
 // Runs inside the embedded JavaScript engine. Flattens an asset module's THREE object
 // graph into a single JSON envelope with base64 typed arrays, so the host marshals once
@@ -37,7 +37,7 @@
   };
 })();
 
-globalThis.__polyfork = (function () {
+globalThis.__remesh = (function () {
   const modules = Object.create(null);
 
   function toBase64(typedArray) {

@@ -1,10 +1,10 @@
 {
-    "name": "Polyfork.Connector.Puerts",
-    "rootNamespace": "Polyfork",
+    "name": "REMesh.Connector.Puerts",
+    "rootNamespace": "REMesh",
     "references": [
-        "Polyfork.Connector",
-        "Polyfork.Connector.Editor",
-        "Polyfork.Puerts"
+        "REMesh.Connector",
+        "REMesh.Connector.Editor",
+        "REMesh.Puerts"
     ],
     "includePlatforms": [
         "Editor"

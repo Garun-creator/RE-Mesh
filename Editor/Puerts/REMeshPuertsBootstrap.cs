@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Advertises the QuickJS runtime to the core assembly.
@@ -11,7 +11,7 @@ namespace Polyfork
     /// the user installed, and it keeps the engine swappable now that it is vendored - the
     /// baker asks the provider for a runtime and does not know or care what answers.
     /// </summary>
-    public static class PolyforkPuertsBootstrap
+    public static class REMeshPuertsBootstrap
     {
         /* Editor-only: this assembly declares includePlatforms: ["Editor"], so there is no
          * player build for a RuntimeInitializeOnLoadMethod to run in. Local baking is an
@@ -23,8 +23,8 @@ namespace Polyfork
 
         static void Register()
         {
-            PolyforkJsRuntimeProvider.EngineName = "QuickJS";
-            PolyforkJsRuntimeProvider.Factory = () => new PolyforkPuertsRuntime();
+            REMeshJsRuntimeProvider.EngineName = "QuickJS";
+            REMeshJsRuntimeProvider.Factory = () => new REMeshPuertsRuntime();
         }
     }
 }

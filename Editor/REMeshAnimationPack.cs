@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// The shared clip pack every imported character animates from.
@@ -14,19 +14,19 @@ namespace Polyfork.EditorTools
     /// Characters ship a rig and no clips, which is the right call - baking one opinionated
     /// walk into every character would be the store deciding how your game moves - but it
     /// leaves a rigged model standing perfectly still on arrival, which reads as broken.
-    /// So the connector fetches the pack polyfork.dev publishes for exactly this, once per
+    /// So the connector fetches the pack remesh.dev publishes for exactly this, once per
     /// project, and every character imported afterwards comes in already idling.
     ///
     /// Downloaded rather than shipped in the package: 2.8 MB of Mixamo clips is a lot to put
     /// in every consumer's project, most of which import no characters at all.
     /// </summary>
-    static class PolyforkAnimationPack
+    static class REMeshAnimationPack
     {
-        const string Url = "https://polyfork.dev/anim/xbot.glb";
+        const string Url = "https://remesh.dev/anim/xbot.glb";
 
         /// <summary>Inside Assets, because a clip referenced by a prefab has to be an asset.</summary>
-        const string Folder = "Assets/Polyfork/Animations";
-        const string Path = Folder + "/polyfork-clips.glb";
+        const string Folder = "Assets/REMesh/Animations";
+        const string Path = Folder + "/remesh-clips.glb";
 
         public static bool IsInstalled => File.Exists(Path);
 
@@ -72,7 +72,7 @@ namespace Polyfork.EditorTools
 
                 if (req.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogWarning($"[Polyfork] could not fetch the animation pack ({req.error}). " +
+                    Debug.LogWarning($"[REMesh] could not fetch the animation pack ({req.error}). " +
                                      "Characters will import without clips.");
                     return false;
                 }
@@ -80,12 +80,12 @@ namespace Polyfork.EditorTools
                 File.WriteAllBytes(Path, req.downloadHandler.data);
                 AssetDatabase.ImportAsset(Path, ImportAssetOptions.ForceSynchronousImport);
 
-                Debug.Log($"[Polyfork] animation pack saved to {Path}.");
+                Debug.Log($"[REMesh] animation pack saved to {Path}.");
                 return true;
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] could not install the animation pack ({e.Message}).");
+                Debug.LogWarning($"[REMesh] could not install the animation pack ({e.Message}).");
                 return false;
             }
         }
@@ -115,7 +115,7 @@ namespace Polyfork.EditorTools
 
             foreach (var clip in source)
             {
-                var rebound = PolyforkClipRetarget.Rebind(clip, prefabInstance.transform);
+                var rebound = REMeshClipRetarget.Rebind(clip, prefabInstance.transform);
                 if (rebound == null) continue;
 
                 var path = AssetDatabase.GenerateUniqueAssetPath($"{dir}/{clip.name}.anim");
@@ -144,8 +144,8 @@ namespace Polyfork.EditorTools
             if (animator == null) animator = prefabInstance.AddComponent<Animator>();
             animator.applyRootMotion = false;
 
-            var player = prefabInstance.GetComponent<PolyforkCharacterAnimation>();
-            if (player == null) player = prefabInstance.AddComponent<PolyforkCharacterAnimation>();
+            var player = prefabInstance.GetComponent<REMeshCharacterAnimation>();
+            if (player == null) player = prefabInstance.AddComponent<REMeshCharacterAnimation>();
 
             player.clips = bound.ToArray();
             player.current = -1;      // -1 means "the default", which is found by name

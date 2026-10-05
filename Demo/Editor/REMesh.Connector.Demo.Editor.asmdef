@@ -1,8 +1,8 @@
 {
-    "name": "Polyfork.Connector.Demo.Editor",
-    "rootNamespace": "Polyfork.Demo.EditorTools",
+    "name": "REMesh.Connector.Demo.Editor",
+    "rootNamespace": "REMesh.Demo.EditorTools",
     "references": [
-        "Polyfork.Connector.Demo"
+        "REMesh.Connector.Demo"
     ],
     "includePlatforms": [
         "Editor"

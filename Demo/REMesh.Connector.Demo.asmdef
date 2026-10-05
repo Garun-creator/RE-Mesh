@@ -1,6 +1,6 @@
 {
-    "name": "Polyfork.Connector.Demo",
-    "rootNamespace": "Polyfork.Demo",
+    "name": "REMesh.Connector.Demo",
+    "rootNamespace": "REMesh.Demo",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

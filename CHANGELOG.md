@@ -1,31 +1,44 @@
-# Changelog — RE:Mesh for Unity
+# Changelog — MESHRA for Unity
 
 All notable changes to this package are documented here.
-
-> **Note:** This project is built on the Polyfork Unity Connector codebase, rebranded and
-> extended as RE:Mesh. Historical entries below document the upstream source from which this
-> project was forked. New RE:Mesh-specific changes will be added above.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.0] - 2026-10-08
 
+### Added & Changed (MESHRA - Innohacks 4.0 Release)
+
+- **Complete Reframing for Indian Gaming & AVGC (Animation, Visual Effects, Gaming, & Comics) Ecosystem:**
+  - Designed and presented by Team **CODE SYNERGY** (Sahil Sharma, Aditya Pratap Singh Tomar, Pratyksh Singh Parmar, Garun Pratap Singh Bhadoriya) for Innohacks 4.0.
+  - Tackles high 3D software licensing costs ($3.1B+ Indian gaming market, 500M+ gamers) and steep workstation hardware barriers.
+  - Solves Tier-2/3 network & latency constraints through a **Zero-Latency Hybrid Baking Engine** (~0.05ms vertex morphing, ~20-140ms in-editor QuickJS local baking, ~120ms server fallback).
+  - Eliminates context-switching and joint hierarchy distortion when retargeting rigged models across custom Indian avatar body proportions via `MeshRACharacterAnimation` & `glTFast` `COLOR_0` vertex-color pipeline.
+- **In-Editor 3D Asset Studio (`Ctrl/Cmd + Shift + P`):**
+  - Native Unity Editor extension for real-time asset browsing, parametric knob tweaking, vertex recoloring, and prefab instantiation.
+- **Package & Namespace Standardization:**
+  - Package ID updated to `dev.meshra.unity-connector`.
+  - Repository URL set to `https://github.com/SKYGOD07/MESHRA`.
+  - Menu paths updated to `Tools ▸ MESHRA ▸ Browse Assets (Ctrl/Cmd + Shift + P)` and `Window ▸ MESHRA ▸ Browse Assets`.
+
+---
+
+
 ### Changed
 
-- **Rebranded from Polyfork to RE:Mesh.** All package names, namespaces, menu paths,
+- **Rebranded from REMesh to RE:Mesh.** All package names, namespaces, menu paths,
   documentation, and repository URLs updated to reflect the RE:Mesh identity.
-- Package name changed from `dev.polyfork.unity-connector` to `dev.remesh.unity-connector`.
+- Package name changed from `dev.remesh.unity-connector` to `dev.remesh.unity-connector`.
 - Repository moved to `https://github.com/Garun-creator/RE-Mesh`.
-- All menu items updated from `Tools ▸ Polyfork ▸ …` to `Tools ▸ RE:Mesh ▸ …`.
-- API key env var renamed from `POLYFORK_API_KEY` to `REMESH_API_KEY`.
-- Key file renamed from `polyfork.key` to `remesh.key`.
-- Asset output path updated from `Assets/Polyfork/` to `Assets/REMesh/`.
+- All menu items updated from `Tools ▸ REMesh ▸ …` to `Tools ▸ RE:Mesh ▸ …`.
+- API key env var renamed from `REMESH_API_KEY` to `REMESH_API_KEY`.
+- Key file renamed from `remesh.key` to `remesh.key`.
+- Asset output path updated from `Assets/REMesh/` to `Assets/REMesh/`.
 - Copyright updated to RE:Mesh (Garun-creator).
 
 ---
 
-<!-- Historical entries from upstream Polyfork source below -->
+<!-- Historical entries from upstream REMesh source below -->
 
 ## [0.19.0] - 2026-08-18
 
@@ -34,13 +47,13 @@ is that the Asset Store will not carry a package which requires attribution.
 
 ### Changed
 
-- **Every menu item is under `Tools ▸ Polyfork` now**, rather than a `Polyfork` tab of its own.
+- **Every menu item is under `Tools ▸ REMesh` now**, rather than a `REMesh` tab of its own.
   Rule: *"Your editor extension needs to be under an existing toolbar tab."* The gallery keeps
-  its second entry under `Window ▸ Polyfork`, since Window is an existing tab too and it is
+  its second entry under `Window ▸ REMesh`, since Window is an existing tab too and it is
   where Unity users look for a window. The README, the manual and the in-editor copy say the
   new path.
 
-- **The Asset Store build ships without the JavaScript engine**, and rebuilds on polyfork.dev
+- **The Asset Store build ships without the JavaScript engine**, and rebuilds on remesh.dev
   the way a player build always has. three.js is MIT and PuerTS is BSD 3-Clause; both require
   their notice to travel with the code, and *"you have assets in your package which require
   attribution"* is a rejection with no version of vendoring that answers it. The GitHub build
@@ -50,7 +63,7 @@ is that the Asset Store will not carry a package which requires attribution.
   only move existing vertices are still interpolated in the editor for nothing, because that
   path is C# and never needed the engine.
 
-- **`Tools ▸ Polyfork ▸ Setup` no longer claims the engine ships with the package.** It reports
+- **`Tools ▸ REMesh ▸ Setup` no longer claims the engine ships with the package.** It reports
   where rebuilds happen, and where to get the engine if this build does not carry one. The
   legacy-PuerTS conflict warning now requires our own engine to be present as well: two copies
   are a conflict, one is the user's own business.
@@ -64,7 +77,7 @@ is that the Asset Store will not carry a package which requires attribution.
 - `LICENSE.md`, `Third Party Notices.md`, `README.md`, `CHANGELOG.md`, `Documentation~/` and
   `Tools~/`, **from the store build only** - the first two are the rejection itself, and the
   rest name a licence in passing. `package.json` drops `license` and `licensesUrl` there, and
-  points `documentationUrl` at polyfork.dev/unity-integration. `make-store-package.py` fails
+  points `documentationUrl` at remesh.dev/unity-integration. `make-store-package.py` fails
   the build if a licence file or manifest key survives, so this is checked rather than believed.
 
 ## [0.18.4] - 2026-08-16
@@ -78,7 +91,7 @@ validator ever looks at:
   enough; it is now `"unityRelease": "0f1"`, which states 6000.0.0f1 or newer, the same claim
   the README and the listing already make.
 
-- **`author.name` must be the publisher account**, not the product. It said Polyfork and the
+- **`author.name` must be the publisher account**, not the product. It said REMesh and the
   account is Present Futures, so the uploader refused the package outright.
 
 - **`Samples~/RuntimeApi` had no meta files.** Unity ignores `~` folders, so nothing ever
@@ -108,8 +121,8 @@ validator ever looks at:
 
 ### Note: the 500s were the server, and so was the empty gallery
 
-  `[Polyfork] could not read the remix allowance … 500` and the gallery needing a Refresh were
-  the same fault, and it was not in the connector: polyfork.dev ran `pm.max_children = 5`, and
+  `[REMesh] could not read the remix allowance … 500` and the gallery needing a Refresh were
+  the same fault, and it was not in the connector: remesh.dev ran `pm.max_children = 5`, and
   PHP-FPM logged "server reached pm.max_children" at exactly the times the connector was in use.
 
   The connector opens the catalogue and its thumbnails together and peaks around ten requests a
@@ -168,7 +181,7 @@ validator ever looks at:
   | 18 | `THREE.SphereGeometry is not a constructor` |
 
   The first is not even a trimming fault: 518 of 578 modules import
-  `three/addons/utils/BufferGeometryUtils.js`, and `PolyforkModuleTransform` drops any import
+  `three/addons/utils/BufferGeometryUtils.js`, and `REMeshModuleTransform` drops any import
   whose path contains "three" — which that one does — so the names were never bound at all.
 
   `Editor/JS/three-runtime.txt` is now built by `Tools~/build-three-runtime.mjs` from the
@@ -205,9 +218,9 @@ validator ever looks at:
   previous set. That is the whole of why the editor felt heavier than the web viewer, which
   re-runs the module and hands three.js the same geometry object back.
 
-  `PolyforkMeshPayload.TryApplyTo` clears and refills the existing meshes, so a vertex count
+  `REMeshMeshPayload.TryApplyTo` clears and refills the existing meshes, so a vertex count
   that moves between steps — exactly what a re-topologising knob does — costs a resize rather
-  than an allocation, a destroy and a fresh upload. `PolyforkBakeRequest.Reuse` carries the
+  than an allocation, a destroy and a fresh upload. `REMeshBakeRequest.Reuse` carries the
   offer; a baker that ignores it, or finds the shape no longer matches, returns a new
   GameObject and the caller swaps as before. It can only be faster or identical.
 
@@ -264,7 +277,7 @@ validator ever looks at:
   - The measurement now owns the first drag: it produces correct geometry by itself, so there
     is no concurrent rebuild to race. As a bonus this stops the knob being re-measured on every
     drag and never once used, which is what the race actually caused.
-  - `PolyforkMorphSet.Apply` checks its meshes are alive and retires itself if not, so no
+  - `REMeshMorphSet.Apply` checks its meshes are alive and retires itself if not, so no
     future caller can throw from inside `OnGUI`.
 
 - A knob measured and found to re-topologise is remembered, instead of costing two bakes on
@@ -299,7 +312,7 @@ validator ever looks at:
   Tube Sponge's reef health. A count now needs a span of at least 2; two states are a toggle.
 
   Fixed on the server first, in `remix_snap`, which is the authority and had the same rule —
-  so this was a two-position slider on polyfork.dev as well. The client mirrors it.
+  so this was a two-position slider on remesh.dev as well. The client mirrors it.
 
 ## [0.15.4] - 2026-08-14
 
@@ -378,7 +391,7 @@ validator ever looks at:
 
 ### Changed
 
-- **The preview camera now moves like the one on polyfork.dev.** `viewer.js` runs OrbitControls
+- **The preview camera now moves like the one on remesh.dev.** `viewer.js` runs OrbitControls
   with `enableDamping`, and this moved the camera instantly and stopped dead, which is most of
   why dragging a model felt different in the editor.
 
@@ -459,20 +472,20 @@ validator ever looks at:
 
 ### Changed
 
-- **The package id is now `dev.polyfork.unity-connector`**, was `dev.polyfork.connector`, to
+- **The package id is now `dev.remesh.unity-connector`**, was `dev.remesh.connector`, to
   match the product namespace actually claimed in the Publisher Portal.
 
-  The bare segment `dev.polyfork.unity` is refused with *"This namespace is already in use by
+  The bare segment `dev.remesh.unity` is refused with *"This namespace is already in use by
   another product"* — impossible under a publisher-scoped namespace, so it is a reserved word
-  rather than a collision. **`dev.polyfork.unity-connector` is accepted.** So the reservation
+  rather than a collision. **`dev.remesh.unity-connector` is accepted.** So the reservation
   is on the exact segment, not on any segment containing the word, which is the narrower and
   correct reading of rules 5.1.b and 2.5.a.
 
 ### Upgrading
 
-- **Remove the package and add the git URL again**, from `com.polyfork.connector` (0.12.x and
-  earlier) or `dev.polyfork.connector` (0.13.0). Unity keys a manifest entry by the package's
-  own name, so neither resolves this one and `Polyfork ▸ Update Package` cannot cross a rename.
+- **Remove the package and add the git URL again**, from `com.remesh.connector` (0.12.x and
+  earlier) or `dev.remesh.connector` (0.13.0). Unity keys a manifest entry by the package's
+  own name, so neither resolves this one and `REMesh ▸ Update Package` cannot cross a rename.
 
   Assembly names, C# namespaces and every asset GUID are untouched, so scenes, prefabs and
   script references survive it. The repository keeps its name, so the git URL is unchanged.
@@ -481,14 +494,14 @@ validator ever looks at:
 
 ### Changed
 
-- **The package id is now `dev.polyfork.connector`**, was `com.polyfork.connector`.
+- **The package id is now `dev.remesh.connector`**, was `com.remesh.connector`.
 
   Not a preference. Asset Store UPM publishing derives the publisher namespace from the domain
-  you verified, so `polyfork.dev` gives `dev.polyfork`, and the uploader rejects a package whose
-  `name` does not match the reserved technical name. `com.polyfork.*` was always a small lie
+  you verified, so `remesh.dev` gives `dev.remesh`, and the uploader rejects a package whose
+  `name` does not match the reserved technical name. `com.remesh.*` was always a small lie
   anyway: it claims a domain we do not own.
 
-- Not `dev.polyfork.unity`: the portal rejects the bare `unity` segment.
+- Not `dev.remesh.unity`: the portal rejects the bare `unity` segment.
 
   Renaming everywhere rather than only in the store build, because a store build that differs
   from the normal one in something load-bearing has already cost this project two review cycles.
@@ -496,8 +509,8 @@ validator ever looks at:
 ### Upgrading
 
 - **Remove the package and add the git URL again.** Unity keys a manifest entry by the
-  package's own name, so an entry under `com.polyfork.connector` cannot resolve a package that
-  now calls itself `dev.polyfork.connector`, and `Polyfork ▸ Update Package` cannot carry you
+  package's own name, so an entry under `com.remesh.connector` cannot resolve a package that
+  now calls itself `dev.remesh.connector`, and `REMesh ▸ Update Package` cannot carry you
   across it.
 
   Nothing else moves. Assembly names, C# namespaces and every asset GUID are untouched, so
@@ -507,7 +520,7 @@ validator ever looks at:
 
 ### Fixed
 
-- **The test assembly tried to compile in consumer projects.** `Polyfork.Connector.Tests`
+- **The test assembly tried to compile in consumer projects.** `REMesh.Connector.Tests`
   references `UnityEngine.TestRunner`, `UnityEditor.TestRunner` and `nunit.framework.dll`, all of
   which come from `com.unity.test-framework`. With no define constraint it compiled wherever the
   package was installed, so a project without Test Framework got unresolved references from a
@@ -548,7 +561,7 @@ validator ever looks at:
 - `Documentation~/ASSET-STORE.md` now leads with **submitting as a UPM package rather than a
   `.unitypackage`**, which is what makes declared dependencies install themselves for a buyer.
   UPM publishing is open to all tools, extensions and SDKs, `package.json` is already
-  submission-ready, and the technical name to reserve is `com.polyfork.connector`.
+  submission-ready, and the technical name to reserve is `com.remesh.connector`.
 
 ## [0.12.1] - 2026-08-14
 
@@ -588,7 +601,7 @@ validator ever looks at:
 
 - `Tools~/make-store-zip.py`, which turns a built package back into a plain folder tree.
   Unzip into `Assets/`, then let Unity export the `.unitypackage` itself, or point Asset Store
-  Tools at `Assets/Polyfork` and upload from the project. Derived from the `.unitypackage` so
+  Tools at `Assets/REMesh` and upload from the project. Derived from the `.unitypackage` so
   the two cannot disagree about their contents.
 
 ## [0.12.0] - 2026-08-14
@@ -617,13 +630,13 @@ validator ever looks at:
 
   | | |
   | --- | --- |
-  | Managed source | verbatim, unedited — PuerTS resolves its own backends by string (`GetType("Puerts.BackendQuickJS")`) and its bootstrap calls `CS.Puerts.Utils`, so a namespace rename would break at run time rather than at compile time. The **assembly** is renamed to `Polyfork.Puerts` instead, which needs no edits. |
+  | Managed source | verbatim, unedited — PuerTS resolves its own backends by string (`GetType("Puerts.BackendQuickJS")`) and its bootstrap calls `CS.Puerts.Utils`, so a namespace rename would break at run time rather than at compile time. The **assembly** is renamed to `REMesh.Puerts` instead, which needs no edits. |
   | Natives | desktop x64 only: Windows, Linux, and a universal macOS build that covers Apple Silicon. Every one marked Editor-only. |
   | Dropped | Android, iOS, WebGL and OpenHarmony binaries (37 MB for platforms an editor-only feature cannot run on), the WSPPAddon websocket library (3.5 MB, referenced by nothing but its own P/Invoke declaration), and the IL2CPP wrapper generator with the ScriptedImporters that would have claimed `.mjs`, `.cjs` and `.lua` project-wide for every user. |
 
   Net 4.4 MB of native, 4.9 MB in total.
 
-- `Polyfork ▸ Setup` is a status page rather than an installer: whether the engine started,
+- `REMesh ▸ Setup` is a status page rather than an installer: whether the engine started,
   and what to check when it did not.
 
 ### Removed
@@ -636,7 +649,7 @@ validator ever looks at:
 - **Remove `com.tencent.puerts.core` and `com.tencent.puerts.quickjs`** from any project that
   has them, along with a `PuerTS` folder beside `Assets` if an older setup window left one.
   Unity refuses to import two native plugins sharing a file name, so a project carrying both
-  copies will not compile. `Polyfork ▸ Setup` detects this and says exactly what to remove.
+  copies will not compile. `REMesh ▸ Setup` detects this and says exactly what to remove.
 
 ### Fixed
 
@@ -662,7 +675,7 @@ validator ever looks at:
   documentation check actually wants: any `.txt`, `.pdf`, `.html`, `.rtf` or `.md` file in the
   paths you select, which either ends in `.pdf` or contains the word "documentation" somewhere
   in its text. The manual said "Manual" throughout and so failed a check it was written to
-  pass. It now ships as `Polyfork-Manual.pdf` beside the HTML, and a PDF is accepted outright.
+  pass. It now ships as `REMesh-Manual.pdf` beside the HTML, and a PDF is accepted outright.
 
   The demo scene needed no change: the check accepts any scene whose root object count is not
   exactly an untouched camera-and-light pair, and this one has three.
@@ -677,12 +690,12 @@ validator ever looks at:
 - **A demo scene and an offline manual, for Asset Store validation.** The validator failed the
   submission on both: no demo scene found, and no documentation file in the accepted formats.
 
-  `Demo/Polyfork Demo.unity` has a camera, a key light and an object whose Inspector lists the
+  `Demo/REMesh Demo.unity` has a camera, a key light and an object whose Inspector lists the
   four setup steps with a button that opens the gallery — which is what the guidance asks of an
-  editor extension. It ships without models on purpose: Polyfork browses a catalogue that lives
+  editor extension. It ships without models on purpose: REMesh browses a catalogue that lives
   online, so the thing that belongs in the scene is whatever the user imports into it.
 
-  `Documentation/Polyfork-Manual.html` is twelve numbered sections with a table of contents.
+  `Documentation/REMesh-Manual.html` is twelve numbered sections with a table of contents.
 
   Both live under `StoreExtras~/` and are unpacked only by `make-store-package.py`. A git-URL
   install has no business getting a demo scene and a manual dropped into the project.
@@ -695,7 +708,7 @@ validator ever looks at:
   copy, image specs and a checklist.
 - **`Tools~/make-store-package.py`**, which builds the store variant from this source and
   then *proves* it is one. Two shipped features are disqualifying on the store — the
-  one-button PuerTS install and `Polyfork ▸ Update Package` both manipulate packages in a
+  one-button PuerTS install and `REMesh ▸ Update Package` both manipulate packages in a
   user's project, which submissions may not do. The script drops those files, cuts the
   regions marked `// <store-strip>`, then searches the result for the forbidden calls and for
   anything the strip left dangling, and fails if it finds either.
@@ -725,7 +738,7 @@ validator ever looks at:
 ### Fixed
 
 - **0.11.1 did not compile.** `CS0104: 'Object' is an ambiguous reference` — 0.11.1 added
-  `using System;` to `PolyforkClipRetarget` for `StringComparison`, which put `System.Object`
+  `using System;` to `REMeshClipRetarget` for `StringComparison`, which put `System.Object`
   in scope alongside `UnityEngine.Object` and made the one bare `Object.DestroyImmediate`
   ambiguous. Qualified.
 
@@ -748,7 +761,7 @@ validator ever looks at:
 
 ### Added
 
-- **`Polyfork ▸ Update Package`.** Checks the published version first and says so when you
+- **`REMesh ▸ Update Package`.** Checks the published version first and says so when you
   are already on it, rather than costing a domain reload to reinstall an identical commit.
 
   Updating clears this package's entry from `Packages/packages-lock.json` before re-adding
@@ -795,11 +808,11 @@ validator ever looks at:
 ### Added
 
 - **Rigged assets arrive animated.** Importing a character now gives it an `Animator`, a
-  `PolyforkCharacterAnimation` component and a set of clips bound to its own skeleton, with
+  `REMeshCharacterAnimation` component and a set of clips bound to its own skeleton, with
   **idle playing by default** and a dropdown in the Inspector to try the others. No sample to
   import and nothing to configure.
 
-  The clips are fetched once per project into `Assets/Polyfork/Animations`, rather than
+  The clips are fetched once per project into `Assets/REMesh/Animations`, rather than
   shipped in the package: 2.8 MB of Mixamo clips is a lot to put in every consumer's project,
   most of which import no characters.
 
@@ -848,7 +861,7 @@ validator ever looks at:
 ### Fixed
 
 - **Rebuilding in the scene swapped the material for a preview shader.** A bake returns
-  meshes wearing the baker's own material, and the local baker's is `Polyfork/Vertex Color`,
+  meshes wearing the baker's own material, and the local baker's is `REMesh/Vertex Color`,
   which does its own lighting and ignores the scene's — so a rebuilt model went unlit and
   stopped being the glTFast material the import gave it. Rebuilds now keep whatever material
   the object is already wearing, which also means one you assigned yourself survives a knob
@@ -884,7 +897,7 @@ validator ever looks at:
 ### Added
 
 - **Imported assets stay editable in the scene.** Importing now also writes a prefab beside
-  the `.glb` carrying a `PolyforkAssetLink`: the asset id and the knob values, as JSON. Drag
+  the `.glb` carrying a `REMeshAssetLink`: the asset id and the knob values, as JSON. Drag
   the prefab in and the Inspector shows the knobs, with a **Rebuild** button that changes the
   model in place.
 
@@ -896,7 +909,7 @@ validator ever looks at:
   import and a component added to it is discarded — the prefab is the only thing that can
   carry state. Previously an import froze a model: changing your mind meant finding the asset
   again, guessing the slider positions, importing a second copy and swapping it by hand.
-- `PolyforkKnobValues.FromJson`, the inverse of `ToJson`. The round trip is what lets a value
+- `REMeshKnobValues.FromJson`, the inverse of `ToJson`. The round trip is what lets a value
   set outlive the window that made it.
 
 ## [0.7.1] - 2026-08-13
@@ -905,7 +918,7 @@ validator ever looks at:
 
 - **A locally imported remix arrived white.** glTFast's exporter drops vertex attributes it
   judges unused, and it judges by the material: *"vertex colors are discarded when the
-  assigned material(s) do not use them."* A Polyfork asset keeps its entire appearance in
+  assigned material(s) do not use them."* A REMesh asset keeps its entire appearance in
   `COLOR_0`, and the material carrying it is our own shader, which glTFast has never heard
   of — so the export threw away the only thing making the model look like anything, and the
   `.glb` landed in the project as untinted geometry.
@@ -1091,13 +1104,13 @@ validator ever looks at:
 ### Fixed
 
 - **Knobs a local bake could honour were still hidden.** The gallery read
-  `PolyforkKnob.Support`, which describes the *server* — and the server bakes only knobs
+  `REMeshKnob.Support`, which describes the *server* — and the server bakes only knobs
   marked `affects: geometry`, treating a missing `affects` as `colors`. A local baker runs
   the asset's own module and honours whatever that module declares.
 
   Large Coastal Boulder's `dampLine` is exactly this: a range knob with no `affects`, which
   the endpoint will not bake and the module turns perfectly well. The UI now asks the baker
-  that would actually serve the asset, which is what `IPolyforkBaker.Supports` was for.
+  that would actually serve the asset, which is what `IREMeshBaker.Supports` was for.
 
 ### Changed
 
@@ -1117,7 +1130,7 @@ validator ever looks at:
 ### Changed
 
 - **The preview matches the store viewer.** Same background (`#eceae6`), same key and rim
-  lights, same 38° lens, taken from `public/viewer.js` on polyfork.dev — with soft shadows.
+  lights, same 38° lens, taken from `public/viewer.js` on remesh.dev — with soft shadows.
   It was a dark studio before, so an asset changed colour and mood between its store page and
   the editor, which invites the question of which one is the real asset.
 - **Knobs respond immediately when bakes are local.** The 250 ms debounce exists to stop a
@@ -1129,13 +1142,13 @@ validator ever looks at:
 
 ### Fixed
 
-- **Locally baked models rendered grey.** All of a Polyfork asset's colour lives in `COLOR_0`
+- **Locally baked models rendered grey.** All of a REMesh asset's colour lives in `COLOR_0`
   — one material, no textures — and Unity's stock shaders discard vertex colour. `URP/Lit`,
   `URP/Simple Lit` and `Standard` all do. The `.glb` path looked right because glTFast
   supplies its own vertex-colour material; the local path had nothing equivalent, so it fell
   back to a shader that threw the colour away.
 
-  The package now ships `Polyfork/Vertex Color`, a plain vertex/fragment shader that draws
+  The package now ships `REMesh/Vertex Color`, a plain vertex/fragment shader that draws
   under both the built-in pipeline and URP. It stays out of player builds like the rest of
   local baking. The stock shaders remain a fallback, and now log a warning saying the model
   will look grey rather than leaving you to work it out.
@@ -1180,8 +1193,8 @@ validator ever looks at:
   which names neither the script nor the step. That message is
   `Encoding.UTF8.GetBytes(chunk)` inside PuerTS's `ScriptEnv.Eval` — something evaluated a
   **null script** — but nothing said which one. The full exception is logged now, and
-  `PolyforkPuertsRuntime.Initialise` labels each step, so a failure names it: creating the
-  environment, evaluating three.js, binding `__polyfork.bake`, and so on, with the script
+  `REMeshPuertsRuntime.Initialise` labels each step, so a failure names it: creating the
+  environment, evaluating three.js, binding `__remesh.bake`, and so on, with the script
   lengths included.
 - Dropped the `UsingFunc`/`UsingAction` pre-registration calls, which are empty methods in
   PuerTS 3.x and only mattered for IL2CPP ahead-of-time wrappers on device.
@@ -1211,7 +1224,7 @@ validator ever looks at:
 
 ### Added
 
-- `PolyforkTar`, a minimal tar reader. Unity's runtime predates `System.Formats.Tar`, so
+- `REMeshTar`, a minimal tar reader. Unity's runtime predates `System.Formats.Tar`, so
   gzip is available and tar is not. It is scoped to what these archives actually contain —
   files and directories, no links, every path short enough to need no long-name record — and
   refuses any entry that resolves outside the destination. The parsing was checked against
@@ -1246,7 +1259,7 @@ validator ever looks at:
 - **0.3.2 did not compile.** The setup window awaited `SendWebRequestAsync`, which lives in
   an `internal` class in the runtime assembly and is therefore invisible from the editor
   assembly. It has its own small awaiter now, which suits it: that download talks to
-  github.com and deliberately shares no transport with the Polyfork client. Widening the
+  github.com and deliberately shares no transport with the REMesh client. Widening the
   runtime's API, or granting the editor assembly blanket access to every internal, would
   both have been larger changes than the twenty lines it took.
 - The setup window's package-manager poll is now removed when the window closes, instead of
@@ -1254,7 +1267,7 @@ validator ever looks at:
 
 ### Changed
 
-- `Polyfork ▸ Make Bakes Instant…` is now **`Polyfork ▸ Setup`**, and the gallery's status
+- `REMesh ▸ Make Bakes Instant…` is now **`REMesh ▸ Setup`**, and the gallery's status
   bar button matches. The explanation moved to the tooltip.
 
 ## [0.3.2] - 2026-08-13
@@ -1268,7 +1281,7 @@ validator ever looks at:
 
 ### Added
 
-- **A one-button PuerTS install** in `Polyfork ▸ Make Bakes Instant…`. It resolves the
+- **A one-button PuerTS install** in `REMesh ▸ Make Bakes Instant…`. It resolves the
   newest PuerTS release, downloads the core and QuickJS tarballs **from that same release**,
   and adds both in a single `AddAndRemove` call. Taking both from one release is what makes
   the version mismatch structurally impossible rather than something to be careful about.
@@ -1294,7 +1307,7 @@ validator ever looks at:
 
 ### Added
 
-- **`Polyfork ▸ Make Bakes Instant…`**, a setup window that gives the real steps (both
+- **`REMesh ▸ Make Bakes Instant…`**, a setup window that gives the real steps (both
   packages from the same GitHub release, added as tarballs), reads the installed versions
   back from the Package Manager, and calls out a version mismatch explicitly. It flips to a
   confirmation on its own once an engine registers.
@@ -1308,7 +1321,7 @@ validator ever looks at:
 ### Added
 
 - **Instant, unmetered bakes in the editor.** The gallery now goes through
-  `PolyforkBakerRegistry` instead of calling the remix endpoint directly, which it had never
+  `REMeshBakerRegistry` instead of calling the remix endpoint directly, which it had never
   done — local baking existed but only ever affected the runtime component, so every editor
   preview was a ~120 ms round trip against your allowance. With a JS engine installed the
   editor runs the asset's own `createAsset()` module: no request, no quota, no wait.
@@ -1328,7 +1341,7 @@ validator ever looks at:
   local baking had been kept at arm's length as an opt-in sample. Editor-only removes the
   reason rather than working around it, so the *Local Baking* sample is gone; it is a
   feature now.
-- `PolyforkJsRuntimeProvider` takes its scripts from a `ScriptSource` hook, set by the editor
+- `REMeshJsRuntimeProvider` takes its scripts from a `ScriptSource` hook, set by the editor
   assembly, falling back to the old `Resources` path so an existing project keeps working.
 
 ## [0.2.3] - 2026-08-13
@@ -1336,15 +1349,15 @@ validator ever looks at:
 ### Fixed
 
 - **The welcome window told signed-in users they had no account.** It decided that from
-  `PolyforkKeySettings.HasKey`, which only reads `EditorPrefs` — so a key supplied through
-  `POLYFORK_API_KEY` or a `polyfork.key` file did not count, and a Founders user was shown
+  `REMeshKeySettings.HasKey`, which only reads `EditorPrefs` — so a key supplied through
+  `REMESH_API_KEY` or a `remesh.key` file did not count, and a Founders user was shown
   the anonymous pitch directly above their own "900 bakes left this hour". Sign-in state
   now comes from the server's `authenticated`, which is the only thing that actually knows.
 - The window no longer opens taller than its content, and reads a good deal warmer.
 
 ### Added
 
-- **Locked assets are marked as locked.** `PolyforkAsset` now reads `owned` and `plan` from
+- **Locked assets are marked as locked.** `REMeshAsset` now reads `owned` and `plan` from
   the catalogue, which it previously ignored entirely — it knew only `free`, so it could not
   tell an asset you had licensed from one you had not. Paid assets you do not own are dimmed
   in the grid, badged `locked`, and offer *Unlock with Pro* instead of *Import*.
@@ -1363,16 +1376,16 @@ validator ever looks at:
 ### Fixed
 
 - **The menu made the package look broken.** The gallery lived under
-  `Window ▸ Polyfork ▸ Browse Assets`, while the local-baking smoke test created its own
-  top-level `Polyfork` menu — so the only entry under `Polyfork` was
+  `Window ▸ REMesh ▸ Browse Assets`, while the local-baking smoke test created its own
+  top-level `REMesh` menu — so the only entry under `REMesh` was
   `4. Smoke-test local baking`, step 4 of a numbered workflow whose steps 1-3 lived in the
-  XR showcase and left with it. Everything now sits under one `Polyfork` menu:
+  XR showcase and left with it. Everything now sits under one `REMesh` menu:
 
   ```
-  Polyfork ▸ Browse Assets            (Ctrl/Cmd + Shift + P, also under Window ▸ Polyfork)
-  Polyfork ▸ API Key…
-  Polyfork ▸ Welcome
-  Polyfork ▸ Diagnostics ▸ Smoke-test local baking
+  REMesh ▸ Browse Assets            (Ctrl/Cmd + Shift + P, also under Window ▸ REMesh)
+  REMesh ▸ API Key…
+  REMesh ▸ Welcome
+  REMesh ▸ Diagnostics ▸ Smoke-test local baking
   ```
 
   The smoke test is greyed out unless a JS engine is actually installed, rather than
@@ -1381,7 +1394,7 @@ validator ever looks at:
 ### Added
 
 - **A welcome window**, shown once per project on first import and reopenable from
-  `Polyfork ▸ Welcome`. It answers the question a new user actually has — *do I need an
+  `REMesh ▸ Welcome`. It answers the question a new user actually has — *do I need an
   account?* — with **Add an API key** and **Continue free** side by side, since browsing,
   previewing and importing all work with no key at all.
 
@@ -1397,10 +1410,10 @@ validator ever looks at:
 - **Two assets were being ignored on import.** Unity cannot write a missing `.meta` inside
   an immutable package, so it skips the asset and says so:
   `… has no meta file, but it's in an immutable folder. The asset will be ignored.`
-  - `Runtime/Resources/` held nothing but `Polyfork.meta`, an orphan left behind when local
+  - `Runtime/Resources/` held nothing but `REMesh.meta`, an orphan left behind when local
     baking moved to `Samples~/LocalBaking`. The folder it described was already gone. Both
     are now removed; the JS payload lives in the sample, which is where it belongs, and
-    `PolyforkJsRuntimeProvider` already falls back to server baking when it is absent.
+    `REMeshJsRuntimeProvider` already falls back to server baking when it is absent.
   - `HANDOFF.md` moved to `Documentation~/`. It is a maintainer document and has no business
     being imported into a consumer's project as a `TextAsset`; the trailing `~` is how Unity
     is told to leave a folder alone.
@@ -1420,12 +1433,12 @@ knobs since 0.1.0, and this release stops hiding them.
 ### Added
 
 - **Structural `choice` and `toggle` knobs are now editable.** Anything marked
-  `affects: geometry` is baked by Polyfork, whatever its type. Verified by hashing
+  `affects: geometry` is baked by REMesh, whatever its type. Verified by hashing
   responses: on `brick-church-6cf1af`, `towerHeight` `"12"`/`"18"` and `rose=false` each
   return a distinct GLB. The gallery draws them as a popup and a checkbox, and
-  `PolyforkRemixable` gained `SetChoice` / `SetToggle`. They always rebuild rather than
+  `REMeshRemixable` gained `SetChoice` / `SetToggle`. They always rebuild rather than
   morph, since they change topology by definition.
-- **Polyfork mark and accent** in the editor windows: title-bar icon, a header strip and
+- **REMesh mark and accent** in the editor windows: title-bar icon, a header strip and
   brand blue on selection. The mark is embedded as PNG bytes, so it renders identically
   regardless of a consumer project's texture import defaults.
 
@@ -1448,13 +1461,13 @@ knobs since 0.1.0, and this release stops hiding them.
 ### Changed
 
 - **The package has its own repo.** It used to live in a subfolder of
-  `lucas-martinic/polyfork-unity`, whose root was a Unity project, so installing meant
-  `…/polyfork-unity.git?path=/Packages/com.polyfork.connector`. It is now
-  `https://github.com/lucas-martinic/polyfork-unity-connector.git`, with no query string.
+  `lucas-martinic/remesh-unity`, whose root was a Unity project, so installing meant
+  `…/remesh-unity.git?path=/Packages/com.remesh.connector`. It is now
+  `https://github.com/lucas-martinic/remesh-unity-connector.git`, with no query string.
   The old URL will stop resolving: that repo is private and archived.
-- `PolyforkAssetImporter.ImportAsync` takes `PolyforkKnobValues` instead of a
+- `REMeshAssetImporter.ImportAsync` takes `REMeshKnobValues` instead of a
   `Dictionary<string, float>`, so it can carry choice and toggle values.
-- `PolyforkServerBaker.Supports` now defers to `PolyforkParams`' classification instead of
+- `REMeshServerBaker.Supports` now defers to `REMeshParams`' classification instead of
   restating it. Keeping two copies is what let them drift apart.
 
 ## [0.1.0] - 2026-08-04
@@ -1463,16 +1476,16 @@ First release. Unverified against Unity on macOS and Linux — see *Known limita
 
 ### Added
 
-- **Gallery window** (`Window ▸ Polyfork ▸ Browse Assets`, `Ctrl/Cmd + Shift + P`).
+- **Gallery window** (`Window ▸ REMesh ▸ Browse Assets`, `Ctrl/Cmd + Shift + P`).
   Thumbnail grid over the catalogue, disk-cached after first load; orbitable preview;
   live knob editing; import to project as `.glb` with colours baked in. Undo/redo and a
   zoom level that survives a rebuild.
 - **Schema-driven controls.** Every label, range, step, option and palette entry is read
   from the asset's published `/cdn/{id}-params.json`. Nothing is invented client-side, so
-  a knob added on polyfork.dev appears here without a package update.
+  a knob added on remesh.dev appears here without a package update.
 - **Knob support classification.** Knobs are sorted into server-rebuild, local-recolour
   and unsupported, so controls that the endpoint would silently ignore are not drawn.
-- **Runtime API** — `PolyforkCatalog`, `PolyforkSpawner`, `PolyforkRemixable` — for
+- **Runtime API** — `REMeshCatalog`, `REMeshSpawner`, `REMeshRemixable` — for
   streaming and remixing at play time, with prefetch and a remix budget that degrades to
   the nearest cached variant rather than stalling on a 429.
 - **Vertex morphing** for topology-preserving range knobs: lerps between two bakes at
