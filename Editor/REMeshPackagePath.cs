@@ -1,25 +1,25 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Where this package's own files live, in whichever layout it was installed as.
     ///
     /// There are two, and code that assumes one is broken in the other. Installed from the git
-    /// URL or the registry, the package is at <c>Packages/dev.polyfork.unity-connector</c>. Imported
+    /// URL or the registry, the package is at <c>Packages/dev.remesh.unity-connector</c>. Imported
     /// from a <c>.unitypackage</c> - which is how the Asset Store delivers it - there is no
-    /// package at all: the files land under <c>Assets/Polyfork</c>, and the folder the user
+    /// package at all: the files land under <c>Assets/REMesh</c>, and the folder the user
     /// chose is not fixed, because they can move it.
     ///
     /// So the fallback anchors on a file that is certainly ours and walks up from it. Its own
     /// script asset is the natural anchor: whatever else a user rearranges, this file is still
-    /// at <c>&lt;root&gt;/Editor/PolyforkPackagePath.cs</c>.
+    /// at <c>&lt;root&gt;/Editor/REMeshPackagePath.cs</c>.
     /// </summary>
-    public static class PolyforkPackagePath
+    public static class REMeshPackagePath
     {
-        const string UpmRoot = "Packages/dev.polyfork.unity-connector";
-        const string Anchor = "/Editor/PolyforkPackagePath.cs";
+        const string UpmRoot = "Packages/dev.remesh.unity-connector";
+        const string Anchor = "/Editor/REMeshPackagePath.cs";
 
         static string _root;
 
@@ -32,7 +32,7 @@ namespace Polyfork.EditorTools
 
                 if (AssetDatabase.IsValidFolder(UpmRoot)) return _root = UpmRoot;
 
-                foreach (var guid in AssetDatabase.FindAssets("PolyforkPackagePath t:MonoScript"))
+                foreach (var guid in AssetDatabase.FindAssets("REMeshPackagePath t:MonoScript"))
                 {
                     var path = AssetDatabase.GUIDToAssetPath(guid);
                     if (!path.EndsWith(Anchor)) continue;
@@ -49,7 +49,7 @@ namespace Polyfork.EditorTools
             var root = Root;
             if (root == null)
             {
-                Debug.LogWarning("[Polyfork] could not locate the package folder, so " +
+                Debug.LogWarning("[REMesh] could not locate the package folder, so " +
                                  $"{relativePath} was not read. Local baking will fall back to the server.");
                 return null;
             }
@@ -57,7 +57,7 @@ namespace Polyfork.EditorTools
             var asset = AssetDatabase.LoadAssetAtPath<TextAsset>($"{root}/{relativePath}");
             if (asset != null) return asset.text;
 
-            Debug.LogWarning($"[Polyfork] could not read {root}/{relativePath}. " +
+            Debug.LogWarning($"[REMesh] could not read {root}/{relativePath}. " +
                              "Local baking will fall back to the server.");
             return null;
         }

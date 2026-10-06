@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Draws the clip list as a dropdown of names, and switches clip as you pick.
@@ -10,12 +10,12 @@ namespace Polyfork.EditorTools
     /// which slot rather than which animation, and gets it wrong silently when the array is
     /// reordered. Naming the options also makes the default legible - "idle" rather than 2.
     /// </summary>
-    [CustomEditor(typeof(PolyforkCharacterAnimation))]
-    public sealed class PolyforkCharacterAnimationEditor : Editor
+    [CustomEditor(typeof(REMeshCharacterAnimation))]
+    public sealed class REMeshCharacterAnimationEditor : Editor
     {
         public override void OnInspectorGUI()
         {
-            var anim = (PolyforkCharacterAnimation)target;
+            var anim = (REMeshCharacterAnimation)target;
 
             serializedObject.Update();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("clips"), true);
@@ -28,7 +28,7 @@ namespace Polyfork.EditorTools
             {
                 EditorGUILayout.HelpBox(
                     "No clips on this component.\n\n" +
-                    "Characters imported through Polyfork get them automatically, bound to " +
+                    "Characters imported through REMesh get them automatically, bound to " +
                     "their own skeleton. On anything else, drag clips into the list above.",
                     MessageType.Info);
                 return;

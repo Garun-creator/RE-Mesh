@@ -1,4 +1,4 @@
-// Shows a Polyfork mesh the way it is authored: all of its colour lives in COLOR_0.
+// Shows a REMesh mesh the way it is authored: all of its colour lives in COLOR_0.
 //
 // Unity's stock shaders ignore vertex colour. URP/Lit, URP/Simple Lit and Standard all
 // discard COLOR_0 entirely, so a locally baked asset came out grey while the same asset
@@ -11,7 +11,7 @@
 // magenta under URP.
 //
 // Editor-only, like the rest of local baking: it never reaches a player build.
-Shader "Polyfork/Vertex Color"
+Shader "REMesh/Vertex Color"
 {
     Properties
     {

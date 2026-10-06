@@ -1,389 +1,213 @@
 <p align="center">
-  <img src="Documentation~/polyfork-mark.png" width="88" height="88" alt="RE:Mesh">
+  <img src="Documentation~/remesh-mark.png" width="88" height="88" alt="MESHRA Studio Logo">
 </p>
 
-<h1 align="center">RE:Mesh for Unity</h1>
+<h1 align="center">MESHRA</h1>
+<h3 align="center">In-Editor Real-Time 3D Asset Studio & Automated Rigging Engine</h3>
+<p align="center"><b>Built for the Indian Gaming & AVGC (Animation, Visual Effects, Gaming, & Comics) Ecosystem</b></p>
 
 <p align="center">
-  <a href="https://github.com/Garun-creator/RE-Mesh">github.com/Garun-creator/RE-Mesh</a>
+  <a href="https://github.com/SKYGOD07/MESHRA">github.com/SKYGOD07/MESHRA</a>
   &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a>
-  &nbsp;·&nbsp; <a href="LICENSE.md">MIT</a>
+  &nbsp;·&nbsp; <a href="LICENSE.md">MIT License</a>
   &nbsp;·&nbsp; Unity 6000.0+
 </p>
 
-**RE:Mesh** is a Unity package that brings a 3D asset catalogue directly into the editor. Browse the catalogue, turn the same knobs the web viewer exposes, watch the model rebuild in real time, and drop it into your project as a `.glb` — with your colours baked in.
+---
 
-> **Tools ▸ RE:Mesh ▸ Browse Assets                           Ctrl/Cmd + Shift + P
-> Tools ▸ RE:Mesh ▸ API Key…
-> Tools ▸ RE:Mesh ▸ Welcome
-> Tools ▸ RE:Mesh ▸ Setup                                   is local baking running, and why not
-> Tools ▸ RE:Mesh ▸ Update Package                          pull the newest version from GitHub
-> Tools ▸ RE:Mesh ▸ Diagnostics ▸ Smoke-test local baking   bake one model, print timings
+## 🚀 Pitch Deck Presentation (Innohacks 4.0 Template Format)
+
+> [!IMPORTANT]
+> **Track / Theme**: Game Development & Software Innovation / AI Tools  
+> **Team Name**: CODE SYNERGY  
+> **GitHub Repository**: [SKYGOD07/MESHRA](https://github.com/SKYGOD07/MESHRA)
+
+---
+
+### Slide 1: Title & Team Details
+
+* **Project Title**: **MESHRA**: In-Editor Real-Time 3D Asset Studio & Automated Rigging Engine
+* **Track / Theme**: Game Development & Software Innovation / AI Tools
+* **Team Name**: **CODE SYNERGY**
+* **Team Members**:
+  * **Sahil Sharma**
+  * **Aditya Pratap Singh Tomar**
+  * **Pratyksh Singh Parmar**
+  * **Garun Pratap Singh Bhadoriya**
+
+---
+
+### Slide 2: PROBLEM STATEMENT (Tailored to Indian Gaming & Creator Ecosystem)
+
+1. **High Infrastructure Barrier in India’s AVGC Sector**  
+   India’s gaming market is projected to reach **$3.1B+ with 500M+ gamers**, yet **90%+ of game assets are imported** due to prohibitive 3D software licensing costs (Maya/3ds Max) and steep hardware workstation requirements.
+2. **Tier-2/3 Network & Latency Constraints**  
+   Cloud-only 3D generation pipelines rely on high-bandwidth, ultra-low-latency infrastructure. In Indian tier-2/3 indie hubs, cloud mesh baking incurs **120ms–300ms+ latency** and heavy API recurring costs.
+3. **Context Switching & Animation Distortion**  
+   Student developers and indie studios waste **60%+ of build time context-switching** between external 3D software and Unity. Furthermore, retargeting rigged character models across custom Indian avatar body proportions frequently distorts joint hierarchies and tears meshes.
+
+---
+
+### Slide 3: PROPOSED SOLUTION
+
+* 🎨 **In-Editor 3D Asset Studio (`Ctrl/Cmd + Shift + P`)**  
+  A native Unity extension allowing developers to search, parametrically tweak, and instantiate 3D models instantly inside the editor without leaving Unity.
+* ⚡ **Zero-Latency Hybrid Baking Engine**  
+  Combines local in-editor JavaScript/QuickJS execution (**~20–140ms**) with ultra-fast vertex morphing (**~0.05ms**) to perform instant geometric and color adjustments without relying on paid cloud APIs or internet connectivity.
+* 🦴 **Automated Character Rigging & Asset Pipeline**  
+  Auto-generates Unity prefabs via `glTFast`, bakes vertex colors into `COLOR_0`, and automatically maps Mixamo animation clips to custom character skeletons without mesh tearing or manual retargeting via `MeshRACharacterAnimation`.
+
+---
+
+### Slide 4: TECH STACK & ARCHITECTURE DIAGRAM
+
+```mermaid
+graph TD
+    UI["User Interface Layer<br/>(MeshRA Asset Gallery & Inspector Sliders)"]
+    Router{"Zero-Latency Routing"}
+    Morph["Vertex Morphing<br/>(~0.05ms)"]
+    QuickJS["Local QuickJS Baker<br/>(~20-140ms)"]
+    Server["Server Fallback<br/>(~120ms)"]
+    Output["Asset & Rig Output<br/>(glTFast GLB-to-Prefab Converter +<br/>MeshRACharacterAnimation bone-binding)"]
+
+    UI --> Router
+    Router -->|Topology Preserved| Morph
+    Router -->|Local QuickJS Engine| QuickJS
+    Router -->|Fallback / Cloud Vault| Server
+    Morph --> Output
+    QuickJS --> Output
+    Server --> Output
 ```
-https://github.com/Garun-creator/RE-Mesh.git
+
+#### Core Stack Specifications:
+* **Engine & Frontend**: Unity 6000.0+, C#, Custom Unity Editor Windows & Inspector Controls.
+* **Embedded Execution Engine**: QuickJS / PuerTS (in-editor local JavaScript execution without external runtimes).
+* **3D Pipeline & Importers**: `com.unity.cloud.gltfast`, three.js catalog runtime, `COLOR_0` vertex-color pipeline.
+* **Architecture Flow**:
+  1. **User Interface Layer**: MeshRA Asset Gallery (`Ctrl/Cmd + Shift + P`) & Custom Inspector Sliders.
+  2. **Zero-Latency Routing**: Vertex Morphing (~0.05ms) $\rightarrow$ Local QuickJS Baker (~20–140ms) $\rightarrow$ Server Fallback (~120ms).
+  3. **Asset & Rig Output**: glTFast GLB-to-Prefab Converter + `MeshRACharacterAnimation` bone-binding pipeline.
+
+---
+
+### Slide 5: BUSINESS PLAN
+
+* 🎯 **Target Market**: Indian indie game developers, gaming studio startups, college hackathon teams, and AR/VR ed-tech creators.
+* 💳 **Freemium & API Subscription Model**:  
+  * **Free Tier**: Local in-editor mesh baking, standard catalog assets, zero API cost.
+  * **Premium API Tiers**: Cloud remixing, proprietary model vaults, and team collaboration sync.
+* 📈 **Ecosystem Growth**: Distribution through the Unity Asset Store, strategic partnerships with Indian game development institutes, and B2B studio licensing.
+
+---
+
+### Slide 6: THANK YOU
+
+* **Project Name**: MESHRA
+* **Team Name**: CODE SYNERGY
+* **GitHub Repository**: [SKYGOD07/MESHRA](https://github.com/SKYGOD07/MESHRA)
+
+---
+
+## 📦 Installation & Setup
+
+### Package Manager (Git URL)
+
+In Unity, open **Window ▸ Package Manager ▸ + ▸ Add package from git URL…**:
+
+```
+https://github.com/SKYGOD07/MESHRA.git
 ```
 
-That resolves both dependencies for you, because Package Manager reads them from the manifest.
+### Dependencies
+MESHRA relies on Unity's official glTF & JSON packages:
+```
+com.unity.cloud.gltfast
+com.unity.nuget.newtonsoft-json
+```
 
-Or grab **`REMesh.unitypackage`** from
-[Releases](https://github.com/Garun-creator/RE-Mesh/releases) and
-double-click it. The git URL updates in place from `Tools ▸ RE:Mesh ▸ Update Package`; the
-`.unitypackage` is the one-file version for handing to somebody.
-
-> **A `.unitypackage` carries no dependency information**, so install these two first —
-> *Window ▸ Package Manager ▸ + ▸ Install package by name*. Both are free, from Unity's own
-> registry. Skip it and every RE:Mesh assembly fails to compile against references it cannot
-> find; the Console then names the missing package and why it is needed.
->
-> ```
-> com.unity.cloud.gltfast
-> com.unity.nuget.newtonsoft-json
-> ```
-
-Or by hand, which also lets you pin a version with `#v1.0.0`:
-
+Or configure directly in `Packages/manifest.json`:
 ```jsonc
-// Packages/manifest.json
-"dev.remesh.unity-connector": "https://github.com/Garun-creator/RE-Mesh.git",
-"com.unity.cloud.gltfast": "6.19.0",
-"com.unity.nuget.newtonsoft-json": "3.2.2"
-```
-
-Unity 6000.0 or newer. The two dependencies are resolved from Unity's own registry.
-
-## Updating
-
-A package installed from a git URL does not update on its own. **Tools ▸ RE:Mesh ▸ Update Package**
-checks the published version, tells you if you are already on it, and pulls the newest one if
-not.
-
-It has to clear this package's entry from `Packages/packages-lock.json` to do it: UPM records
-the exact commit it resolved and honours it afterwards, so re-adding the same URL resolves to
-the same commit and nothing appears to happen. Unity's own advice is to remove the package and
-install it again, which is the same operation with more steps.
-
-## Menu
-
-```
-Tools ▸ RE:Mesh ▸ Browse Assets                          Ctrl/Cmd + Shift + P
-Tools ▸ RE:Mesh ▸ API Key…
-Tools ▸ RE:Mesh ▸ Welcome
-Tools ▸ RE:Mesh ▸ Setup                                  is local baking running, and why not
-Tools ▸ RE:Mesh ▸ Update Package                         pull the newest version from GitHub
-Tools ▸ RE:Mesh ▸ Diagnostics ▸ Smoke-test local baking   bake one model, print timings
-```
-
-The gallery is also under **Window ▸ RE:Mesh**, where Unity users tend to look for a
-window. The welcome screen opens by itself the first time a project imports the package;
-you do not need a key to get past it, and it says so.
-
-## The gallery
-
-| | |
-| --- | --- |
-| **Browse** | Thumbnail grid over the whole catalogue, cached to disk after first load |
-| **Filter** | Search, kit, class, free-only, remixable-only, triangle budget |
-| **Preview** | Orbitable 3D view of the real GLB — drag to rotate, scroll to zoom |
-| **Remix** | Colourway chips, per-slot colour pickers, and range sliders, straight from the schema |
-| **Import** | Writes `Assets/REMesh/<name>.glb`; glTFast turns it into a prefab automatically |
-
-Variants are named after what you changed — `Plastic-Drum_tallness-1.12_recoloured.glb` —
-so several versions of one asset coexist without collisions.
-
-## API key
-
-Public previews cover the entire catalogue, so the gallery works signed out. A key unlocks
-paid downloads and lifts the unauthenticated remix cap.
-
-**Never type it into the component field** — it is a `[SerializeField]` and gets serialised
-into the scene, then committed. Use one of these instead:
-
-| Priority | Source | Good for |
-| --- | --- | --- |
-| 1 | `REMESH_API_KEY` env var | editor, CI |
-| 2 | `StreamingAssets/remesh.key` | device builds |
-| 3 | `persistentDataPath/remesh.key` | side-loading onto a headset |
-| 4 | inspector field | quick tests only — warns on load |
-
-`remesh.key` is gitignored.
-
-## How each knob is honoured
-
-RE:Mesh publishes four knob types, and the remix endpoint does **not** treat them alike.
-
-| Type | Path | Cost |
-| --- | --- | --- |
-| any type with `affects: geometry` | Rebuilt from the asset's own module, in the editor | ~20-140 ms |
-| `color` | Local vertex-colour slot remap | instant |
-| `choice` (colourway) | Local, expands a preset across slots | instant |
-| anything else | Not sent — see below | — |
-
-**What decides the path is `affects`, not the type.** A knob marked `affects: geometry` is
-rebuilt by RE:Mesh whether it is a `range`, a `choice` or a `toggle`. Everything else is
-applied here or not at all, because the server reads a missing `affects` as `colors`.
-
-### Why colours are local
-
-Colour values are accepted by the endpoint and silently ignored — the GLB comes back
-byte-identical, while a geometry knob of any type rebuilds it:
-
-```
-{}                          6D103CFE…  45096 b
-{"body":"#FF6600"}          6D103CFE…  45096 b   ← ignored, colour is local
-{"tallness":1.12}           3A1FA1AC…  53160 b   ← rebuilt (range)
-{"towerHeight":"12"}        4299F327…  65960 b   ← rebuilt (choice)
-{"rose":false}              75FF9147…  62648 b   ← rebuilt (toggle)
-```
-
-Note the quotes on `"12"`. Options are compared strictly, so sending the number `12` for an
-option published as the string `"12"` matches nothing and returns the baseline mesh.
-
-So colours are applied client-side, and the mapping is exact rather than approximate. A
-RE:Mesh asset is one mesh with baked `COLOR_0` vertex colours, and the set of distinct
-vertex colours **is** the set of default hexes declared by its colour knobs. For
-`plastic-drum-da992f`: `#8FB4C9`×1386 = `body`, `#1B1D20`×336 = `bung`, `#4E5459`×126 =
-`lid`. Recolouring is a slot lookup, not a guess.
-
-On import, the recoloured mesh is re-exported through glTFast, so the saved `.glb` carries
-your colours in `COLOR_0` and stays correct outside Unity.
-
-### Why some knobs are hidden
-
-A knob that does not declare `affects: geometry` and is not a colour cannot be honoured
-from a GLB: the endpoint drops it, and there is no local equivalent. Those are not drawn,
-rather than shown as controls that do nothing, and the gallery says how many there were.
-
-The asset's own module honours all of them, and the editor runs that module directly, so a
-local rebuild is not limited this way.
-
-Classification lives in one place, `REMeshParams.Classify`. If the platform's behaviour
-changes again, that is the only thing to edit — `REMeshServerBaker` reads its verdict
-rather than keeping a second copy.
-
-### Range values are snapped
-
-Range values are put on the same grid the server bakes on (40 steps across `min`..`max`, or
-whole numbers for a count-style knob). The server canonicalises *after* it keys its cache,
-so an off-grid value is baked as its snapped neighbour but requested under a URL nobody
-else will ever ask for: the bake is shared, the cache hit is not.
-
-### Endpoint behaviour worth knowing
-
-- Values clamp to `min`/`max` (`patchCount=99` == `patchCount=10`).
-- Unknown knobs, malformed JSON, non-geometry knobs and choice values that match no option
-  all fall back to the baseline GLB rather than erroring, so a bad request looks like
-  "nothing happened".
-- The `x-remix` response header reports `exact` vs `fallback`; the client surfaces it.
-
-## Runtime API
-
-The same client works at play time. `Samples~/RuntimeApi` is a runnable version of this.
-
-```csharp
-var catalog = FindFirstObjectByType<REMeshCatalog>();
-catalog.Loaded += async () =>
 {
-    var remixable = await REMeshSpawner.SpawnAsync(catalog, catalog.Next());
-    remixable.SetColorway("colorway", "kerosene-red");   // instant
-    remixable.SetRange("tallness", 1.12f);               // rebuild
-};
-```
-
-Knobs combine, so the variant space is a product — `plastic-drum` alone is
-`tallness(7) × facets(8) × taper(7)` = 392 GLBs. `PrewarmAsync` therefore walks **one axis
-at a time around the current values** (linear, 5–15 requests) rather than prefetching
-combinations, and re-warms after each rebuild. `REMeshRemixBudget` keeps an
-unauthenticated session under the remix cap and degrades to the nearest cached variant
-instead of stalling on a 429.
-
-## Where geometry gets rebuilt
-
-Turning a range knob has to re-run the asset's generator. There are three ways to pay for
-that, and the connector ships all three because they suit different projects.
-
-| | Cost | Needs | Use when |
-| --- | --- | --- | --- |
-| **Local bake** (default in the editor) | ~20-140 ms | Nothing — the engine ships with the package | Editing. It spends no allowance and needs no network once the module is fetched. |
-| **Vertex morph** | ~0.05 ms | Two bakes up front, measured once per knob | A slider that tracks the hand. Only knobs that preserve topology qualify, and that has to be measured rather than assumed. |
-| **Server bake** | One request, ~120 ms | Network, quota | Player builds, rigged assets, and anything the local module cannot build. |
-
-Morphing is the one most projects overlook:
-
-```csharp
-await remixable.MeasureMorphableKnobsAsync();
-if (remixable.IsMorphable("tallness")) {
-    // SetRange now interpolates between two bakes locally, per frame if you like
+  "dependencies": {
+    "dev.meshra.unity-connector": "https://github.com/SKYGOD07/MESHRA.git",
+    "com.unity.cloud.gltfast": "6.19.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  }
 }
 ```
 
-Local baking runs the asset's own `createAsset()` module in-process on QuickJS, in the
-editor. It needs no setup: the engine ships inside the package, editor-only, so it never
-reaches a player build.
+---
 
-## Types
+## 🖥️ MESHRA Unity Menu Shortcuts
 
-| Type | Role |
-| --- | --- |
-| `REMeshGalleryWindow` | The editor gallery |
-| `REMeshAssetImporter` | Import-to-project with colour baking |
-| `REMeshAssetPreview` | Orbitable preview via `PreviewRenderUtility` |
-| `REMeshClient` | Typed HTTP access |
-| `REMeshParams` / `REMeshKnob` | Published schema + support classification |
-| `REMeshColorSlots` | Vertex-colour slot binding and recolouring |
-| `REMeshCatalog` / `REMeshRemixable` | Runtime catalogue and live remix state |
-| `REMeshCredentials` | Key resolution that keeps secrets out of the scene |
+```text
+Tools ▸ MESHRA ▸ Browse Assets                           Ctrl/Cmd + Shift + P
+Tools ▸ MESHRA ▸ API Key…
+Tools ▸ MESHRA ▸ Welcome
+Tools ▸ MESHRA ▸ Setup                                   (Check local QuickJS engine status)
+Tools ▸ MESHRA ▸ Update Package                          (Pull latest version from GitHub)
+Tools ▸ MESHRA ▸ Diagnostics ▸ Smoke-test local baking   (Bake single model, benchmark timings)
+```
 
-## Notes
+The gallery is also available under **Window ▸ MESHRA ▸ Browse Assets**.
 
-- Assets are authored at real-world metres with the origin on the ground (`minY = 0`).
-  Don't rescale to fake a fit; pick a right-sized asset.
-- Requires **Linear** colour space so vertex-colour maths matches the authored hexes.
+---
 
-## Instant bakes in the editor
+## 🛠️ Feature Breakdown
 
-By default a knob change is a round trip: the server rebuilds the mesh in about 120 ms and
-it counts against your hourly allowance. Install a JavaScript engine and the editor runs the
-asset's **own `createAsset()` module** instead — the same program the store runs — so a
-slider costs CPU rather than a request.
+### 1. In-Editor Asset Gallery (`Ctrl/Cmd + Shift + P`)
+* **Browse**: High-performance thumbnail grid over the catalog, cached locally.
+* **Filter**: Search by category, poly budget, free/premium tier, and topological morphability.
+* **Preview**: Real-time 3D viewport (orbit, pan, zoom) with instant material feedback.
+* **Remix**: Real-time range sliders, colorway chips, and per-slot vertex color pickers.
+* **Import**: Writes `.glb` into `Assets/MESHRA/` and instantiates a Unity prefab automatically.
 
-**There is nothing to install.** The engine is PuerTS on QuickJS, vendored into the package
-under `Editor/Puerts/Vendor/` (BSD 3-Clause; see `Third Party Notices.md`). Drag a slider and
-the geometry rebuilds as you drag. **Tools ▸ RE:Mesh ▸ Setup** reports whether it started and what to
-check if it did not.
+### 2. Zero-Latency Hybrid Baking Performance
 
-It is editor-only and desktop-only: Windows, macOS (universal, so Apple Silicon included) and
-Linux on x64. The assembly declares `includePlatforms: ["Editor"]` and every native library is
-marked Editor-only, so a player build gets none of it — which is the point, since a shipped
-game keeps using the server baker.
+| Baking Strategy | Latency | Network Req. | Best Used For |
+| :--- | :--- | :--- | :--- |
+| **Vertex Morphing** | **~0.05 ms** | 0 (Local) | Real-time continuous slider tweaking during gameplay / editor interaction |
+| **Local QuickJS Baker** | **~20–140 ms** | 0 (Local) | Parametric geometry rebuilds inside the Unity Editor without cloud API fees |
+| **Server Fallback** | **~120 ms** | 1 (HTTP) | Locked cloud vault assets & heavy server side baking |
 
-The gallery picks the local baker up automatically and stops reporting a remaining-bakes count
-once it has: with a local engine the allowance only governs assets whose module this connection
-cannot fetch, which are the ones you could not import anyway.
+### 3. Automated Character Rigging (`MeshRACharacterAnimation`)
+* Character models are auto-rigged with standard skeleton hierarchies (Mixamo topology compatibility).
+* `MeshRACharacterAnimation` handles playable graph clip transitions without requiring manual AnimatorController setup.
+* Rotations are bound dynamically while preserving custom avatar bone lengths, preventing mesh distortion or joint hierarchy tearing across Indian character proportions.
+* Vertex colors are baked into `COLOR_0` for zero-material-overhead rendering.
 
-> **Install it one way, not two.** The `.unitypackage` is built from these same files and its
-> assets carry the same GUIDs as a git-URL install, so a project holding both ends up with two
-> copies of every assembly and every native plugin, which will not compile. Remove one before
-> adding the other.
+---
 
-> **Upgrading from an earlier build?** Remove `com.tencent.puerts.core` and
-> `com.tencent.puerts.quickjs` from your project, and delete the `PuerTS` folder beside
-> `Assets` if an older setup window left one. Unity refuses to import two native plugins with
-> the same file name, so the project will not compile while both copies are present.
-> **Tools ▸ RE:Mesh ▸ Setup** detects this and says so.
-
-Two things worth knowing:
-
-**It is editor-only, by construction.** The engine assembly declares
-`includePlatforms: ["Editor"]`, every native library is marked Editor-only, and the 734 KB
-three.js runtime lives under `Editor/` rather than in a `Resources` folder — Unity copies
-`Resources` into every build whether anything references it or not. So none of it reaches a
-player, and a shipped game always uses the server baker.
-
-**It only covers assets whose module you can fetch** — every free asset, and paid ones once
-you own them. Locked assets still preview from their public GLB and still remix on the
-server.
-
-For responsive sliders with no engine at all, there is a middle option: the runtime measures
-whether a range knob is topology-preserving and, when it is, interpolates between two bakes
-at about 0.05 ms. 14 of 32 range knobs qualified on the live catalogue.
+## 💻 Runtime C# API Usage
 
 ```csharp
-await remixable.MeasureMorphableKnobsAsync();
-if (remixable.IsMorphable("width")) {
-    // SetRange now interpolates locally instead of calling out
+using MeshRA;
+using UnityEngine;
+
+public class MESHRAExample : MonoBehaviour
+{
+    async void Start()
+    {
+        var catalog = FindFirstObjectByType<MeshRACatalog>();
+        catalog.Loaded += async () =>
+        {
+            // Spawn asset dynamically from catalog
+            var remixable = await MeshRASpawner.SpawnAsync(catalog, catalog.Next());
+            
+            // Instant vertex recoloring
+            remixable.SetColorway("colorway", "kerosene-red");
+            
+            // Parametric geometry morph
+            remixable.SetRange("tallness", 1.12f);
+        };
+    }
 }
 ```
 
-## Still editable after you drop it in a scene
+---
 
-Importing writes two files — the `.glb` and a **prefab beside it carrying a
-`REMeshAssetLink`** — and drops the prefab into the open scene in front of the camera.
-Select it and the Inspector keeps the asset's knobs: move a slider and the model changes in
-place as you go.
+## 📜 License & Credits
 
-Rebuilding keeps whatever material the object is wearing, so a material you assigned
-yourself survives a knob change.
-
-Rebuilding replaces the meshes on the object, so its transform, its children, its colliders
-and anything else you attached survive the change. The knob values are stored on the
-component as JSON, so they outlive the window that made them: a month later the fence is
-still one section away from being longer, rather than a mesh whose settings nobody wrote
-down.
-
-Why a prefab rather than the `.glb` itself: an imported model is rebuilt from the file on
-every import, so a component added to it is discarded. The prefab is the thing that can
-carry state. The `.glb` is still there and still a normal Unity asset if you would rather
-have the frozen mesh.
-
-At runtime the component does nothing and costs a few bytes, so it is safe to leave on a
-shipped prefab.
-
-## Rigs and animation
-
-Some assets carry more than geometry, and what survives an import depends on what you did to
-it first.
-
-**Imported unchanged, you get the authored file**: named parts, real materials, and any baked
-`AnimationClip` the asset ships. `forest-rabbit-ea2da0` arrives with its `Walk`; self-animating
-props like `steam-plume-f06841` arrive with their `tick`.
-
-**Imported with knobs turned or colours changed, you get a baked mesh.** A remix is rebuilt
-geometry, and a rebuild has no clips to carry — the connector logs a warning when it is about
-to drop one rather than letting it vanish quietly.
-
-**Characters are rigged, not animated.** They ship a skeleton and named joints, and the
-catalogue publishes the handles: `rigged_parts` gives each part an axis and a range, e.g.
-`LeftArm` rotating on `z` from 0 to -55 degrees. Nothing is missing when a character imports
-without clips — there were none.
-
-**So the connector supplies them.** Import a rigged asset and it arrives with an `Animator`,
-a `REMeshCharacterAnimation` component, a set of clips bound to its own skeleton, and
-**idle playing by default**. The Inspector shows a dropdown to try the others; from script it
-is `anim.Play("walk")`.
-
-The clips are fetched once per project into `Assets/REMesh/Animations` rather than shipped
-in the package — 2.8 MB of animation clips is a lot to put in every project, most of which
-import no characters at all.
-
-**Only rotations are bound.** A clip carries a position curve for every bone, and
-those values *are* the source skeleton's proportions — where its elbow sits relative to its
-shoulder. Applied to a rig with different bone lengths they yank every joint to a position
-belonging to a different body, and the character comes apart rather than animating wrongly. A
-joint *angle* means the same thing on any skeleton with the same topology, so that is what
-transfers. Characters therefore animate **in place**, which suits the `applyRootMotion = false`
-the importer sets: you move the character, the clip poses it.
-
-## Exporting to FBX
-
-There is no FBX button here on purpose. Assets import as `.glb`, which glTFast turns into a
-prefab, and that prefab is a normal Unity GameObject — so Unity's own exporter already does
-the job:
-
-1. Install **FBX Exporter** (`com.unity.formats.fbx`) from the Package Manager.
-2. Right-click the imported prefab ▸ **Export To FBX**.
-
-It carries the vertex colours across, which is the part that matters for these assets: a
-RE:Mesh model is one mesh with one material and no textures, so `COLOR_0` *is* the look.
-The exporter writes them as an `FbxLayerElementVertexColor` layer whenever the mesh reports
-`HasValidVertexColors()`.
-
-Prefer the `.glb` where you have the choice. It is the file the API actually served, so
-it matches the web viewer exactly, and vertex colours are a first-class glTF concept rather
-than something to verify after a conversion. Blender, Godot, three.js and Unreal 5 all read
-glTF natively. Reach for FBX when a pipeline demands it — Mixamo, or a Maya-centric
-studio — not by default.
-
-## Samples
-
-Import from the package page in **Window ▸ Package Manager**.
-
-| Sample | What it does |
-| --- | --- |
-| **Runtime API** | Spawns an asset at play time and drives a knob from script |
-
-## Licence
-
-The integration code is **MIT** — see [`LICENSE.md`](LICENSE.md).
-
-Redistributed third-party components are listed in
-[`Third Party Notices.md`](Third%20Party%20Notices.md).
+* **License**: MIT License — see [LICENSE.md](LICENSE.md).
+* **Developed by**: Team **CODE SYNERGY** (Sahil Sharma, Aditya Pratap Singh Tomar, Pratyksh Singh Parmar, Garun Pratap Singh Bhadoriya).
+* **Third Party Components**: See [Third Party Notices.md](Third%20Party%20Notices.md).

@@ -9,7 +9,7 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Pulls the newest version of this package.
@@ -24,16 +24,16 @@ namespace Polyfork.EditorTools
     /// So this drops the lock entry - the whole of what pins the old commit - and re-adds the
     /// URL, which is the same operation with none of the ceremony.
     /// </summary>
-    static class PolyforkUpdate
+    static class REMeshUpdate
     {
-        const string PackageName = "dev.polyfork.unity-connector";
-        const string GitUrl = "https://github.com/lucas-martinic/polyfork-unity-connector.git";
+        const string PackageName = "dev.meshra.unity-connector";
+        const string GitUrl = "https://github.com/SKYGOD07/MESHRA.git";
         const string ManifestUrl =
-            "https://raw.githubusercontent.com/lucas-martinic/polyfork-unity-connector/main/package.json";
+            "https://raw.githubusercontent.com/SKYGOD07/MESHRA/main/package.json";
 
         static AddRequest _request;
 
-        [MenuItem("Tools/Polyfork/Update Package", priority = 4)]
+        [MenuItem("Tools/MESHRA/Update Package", priority = 4)]
         static void Update() => _ = UpdateAsync();
 
         /// <summary>The version currently in the project, or null.</summary>
@@ -61,7 +61,7 @@ namespace Polyfork.EditorTools
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] could not check for updates ({e.Message}).");
+                Debug.LogWarning($"[REMesh] could not check for updates ({e.Message}).");
             }
 
             /* Checked rather than assumed, because "update" that reinstalls an identical
@@ -70,7 +70,7 @@ namespace Polyfork.EditorTools
             if (latest != null && installed != null && latest == installed)
             {
                 EditorUtility.DisplayDialog(
-                    "Polyfork",
+                    "REMesh",
                     $"Already on {installed}, which is the latest.",
                     "OK");
                 return;
@@ -81,7 +81,7 @@ namespace Polyfork.EditorTools
                 : $"Update from {installed ?? "unknown"} to {latest}?";
 
             if (!EditorUtility.DisplayDialog(
-                    "Update Polyfork",
+                    "Update REMesh",
                     $"{what}\n\nUnity will re-resolve the package and recompile. Anything you have " +
                     "imported into your project stays where it is.",
                     "Update", "Cancel"))
@@ -121,7 +121,7 @@ namespace Polyfork.EditorTools
             {
                 // Not fatal: Add may still pick up a newer commit, and if it does not the
                 // user is where they started rather than somewhere worse.
-                Debug.LogWarning($"[Polyfork] could not clear the package lock ({e.Message}).");
+                Debug.LogWarning($"[REMesh] could not clear the package lock ({e.Message}).");
             }
         }
 
@@ -132,19 +132,19 @@ namespace Polyfork.EditorTools
             EditorApplication.update -= Poll;
 
             if (_request.Status == StatusCode.Success)
-                Debug.Log($"[Polyfork] updated to {_request.Result?.version}.");
+                Debug.Log($"[REMesh] updated to {_request.Result?.version}.");
             else
-                Debug.LogWarning($"[Polyfork] update failed: {_request.Error?.message}");
+                Debug.LogWarning($"[REMesh] update failed: {_request.Error?.message}");
 
             _request = null;
         }
 
-        /* Its own transport again: PolyforkClient attaches the Polyfork API key to everything
+        /* Its own transport again: REMeshClient attaches the REMesh API key to everything
          * it sends, and this request goes to githubusercontent.com. */
         static async Task<string> FetchAsync(string url)
         {
             using var req = UnityWebRequest.Get(url);
-            req.SetRequestHeader("User-Agent", "polyfork-unity-connector");
+            req.SetRequestHeader("User-Agent", "remesh-unity-connector");
             req.timeout = 30;
 
             var op = req.SendWebRequest();

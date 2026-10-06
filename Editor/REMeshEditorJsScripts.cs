@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Feeds the local baker its two scripts, read straight out of the package.
@@ -14,20 +14,20 @@ namespace Polyfork.EditorTools
     /// AssetDatabase rather than Resources because a package path is a real asset path, and
     /// this is the one place that knows where the package keeps them.
     ///
-    /// The root used to be hardcoded to <c>Packages/dev.polyfork.unity-connector</c>, which exists
+    /// The root used to be hardcoded to <c>Packages/dev.remesh.unity-connector</c>, which exists
     /// only for a UPM install. Imported from a <c>.unitypackage</c> - the Asset Store's own
     /// delivery - there is no package by that name and the read returned null, so local baking
     /// silently fell back to the server for exactly the users the store sends.
-    /// <see cref="PolyforkPackagePath"/> answers for both layouts.
+    /// <see cref="REMeshPackagePath"/> answers for both layouts.
     /// </summary>
-    static class PolyforkEditorJsScripts
+    static class REMeshEditorJsScripts
     {
         [InitializeOnLoadMethod]
         static void Register()
         {
-            PolyforkJsRuntimeProvider.ScriptSource = () => (Read("three-runtime"), Read("polyfork-bridge"));
+            REMeshJsRuntimeProvider.ScriptSource = () => (Read("three-runtime"), Read("remesh-bridge"));
         }
 
-        static string Read(string name) => PolyforkPackagePath.ReadText($"Editor/JS/{name}.txt");
+        static string Read(string name) => REMeshPackagePath.ReadText($"Editor/JS/{name}.txt");
     }
 }

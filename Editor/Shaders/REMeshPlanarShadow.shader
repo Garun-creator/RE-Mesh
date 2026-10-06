@@ -12,7 +12,7 @@
 //
 // Used as a SECOND material on the model's renderers, which is what makes Unity draw the
 // same mesh twice: once in colour, once flattened.
-Shader "Polyfork/Planar Shadow"
+Shader "REMesh/Planar Shadow"
 {
     Properties
     {

@@ -3,15 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
-    /// Orbitable 3D preview of a loaded Polyfork asset, drawn into an IMGUI rect.
+    /// Orbitable 3D preview of a loaded REMesh asset, drawn into an IMGUI rect.
     ///
     /// Uses PreviewRenderUtility so the model renders in isolation rather than being
     /// dropped into the open scene.
     /// </summary>
-    public sealed class PolyforkAssetPreview : IDisposable
+    public sealed class REMeshAssetPreview : IDisposable
     {
         /// <summary>0xeceae6, the store viewer's background.</summary>
         public static readonly Color Background = new(0.925f, 0.918f, 0.902f, 1f);
@@ -42,7 +42,7 @@ namespace Polyfork.EditorTools
         /* Where the camera is HEADING, with _orbit and _distance easing towards it.
          *
          * The web viewer runs OrbitControls with enableDamping, which is most of why dragging
-         * a model on polyfork.dev feels different from dragging one here: input moved the
+         * a model on remesh.dev feels different from dragging one here: input moved the
          * camera instantly and stopped dead. Settle() is called from the window's editor tick,
          * so the glide costs repaints only while it is actually gliding. */
         Vector2 _orbitTarget = new(25f, 18f);
@@ -77,7 +77,7 @@ namespace Polyfork.EditorTools
         {
             if (_utility != null) return;
 
-            /* Matched to public/viewer.js on polyfork.dev so an asset looks the same here as
+            /* Matched to public/viewer.js on remesh.dev so an asset looks the same here as
              * on its store page. Same background, same key and rim, same 38 degree lens.
              * A model that changes colour and mood between the store and the editor makes
              * the buyer wonder which one is the asset. */
@@ -133,7 +133,7 @@ namespace Polyfork.EditorTools
             _target.hideFlags = HideFlags.HideAndDontSave;
             _utility.AddSingleGO(_target);
 
-            _bounds = PolyforkSpawner.CalculateBounds(_target);
+            _bounds = REMeshSpawner.CalculateBounds(_target);
 
             ApplyPlanarShadow(_target);
 
@@ -166,14 +166,14 @@ namespace Polyfork.EditorTools
         /// </summary>
         void ApplyPlanarShadow(GameObject root)
         {
-            var shader = Shader.Find("Polyfork/Planar Shadow");
+            var shader = Shader.Find("REMesh/Planar Shadow");
             if (shader == null) return;      // cosmetic; never worth failing a preview over
 
             // Per target, so the existing cleanup frees it along with everything else the
             // preview generated.
             var shadow = new Material(shader)
             {
-                name = "Polyfork Planar Shadow",
+                name = "REMesh Planar Shadow",
                 hideFlags = HideFlags.HideAndDontSave
             };
 

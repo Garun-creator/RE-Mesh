@@ -6,41 +6,41 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
-    /// The Polyfork store, inside Unity: browse the catalogue, turn the same knobs the web
+    /// The REMesh store, inside Unity: browse the catalogue, turn the same knobs the web
     /// viewer exposes, and drop the result into the project as a .glb.
     ///
-    /// Knob metadata is Polyfork's own (/cdn/{id}-params.json); nothing here is invented.
+    /// Knob metadata is REMesh's own (/cdn/{id}-params.json); nothing here is invented.
     /// </summary>
-    public sealed class PolyforkGalleryWindow : EditorWindow
+    public sealed class REMeshGalleryWindow : EditorWindow
     {
         const float DetailWidth = 340f;
         const float CardSize = 118f;
         const float CardPadding = 8f;
 
-        [MenuItem("Tools/Polyfork/Browse Assets %#p", priority = 0)]
+        [MenuItem("Tools/MESHRA/Browse Assets %#p", priority = 0)]
         // Also under Window, because that is where Unity users look for a window.
-        [MenuItem("Window/Polyfork/Browse Assets", priority = 1100)]
+        [MenuItem("Window/MESHRA/Browse Assets", priority = 1100)]
         public static void Open()
         {
-            var window = GetWindow<PolyforkGalleryWindow>();
-            PolyforkBrand.ApplyTitle(window, "Polyfork");
+            var window = GetWindow<REMeshGalleryWindow>();
+            MeshRABrand.ApplyTitle(window, "MESHRA Studio");
             window.minSize = new Vector2(720f, 420f);
             window.Show();
         }
 
         // ---- services -------------------------------------------------------
-        PolyforkClient _client;
-        PolyforkGlbLoader _loader;
-        PolyforkThumbnailCache _thumbs;
-        PolyforkAssetPreview _preview;
+        REMeshClient _client;
+        REMeshGlbLoader _loader;
+        REMeshThumbnailCache _thumbs;
+        REMeshAssetPreview _preview;
         CancellationTokenSource _cts;
 
         // ---- catalogue ------------------------------------------------------
-        readonly List<PolyforkAsset> _all = new();
-        List<PolyforkAsset> _filtered = new();
+        readonly List<REMeshAsset> _all = new();
+        List<REMeshAsset> _filtered = new();
         string _status = "Connecting...";
         bool _loading;
 
@@ -68,7 +68,7 @@ namespace Polyfork.EditorTools
          *
          * This is what the web viewer does, and why dragging a slider there is continuous
          * while dragging one here was a series of rebuilds with nothing in between. */
-        readonly Dictionary<string, PolyforkMorphSet> _morphs = new();
+        readonly Dictionary<string, REMeshMorphSet> _morphs = new();
         readonly HashSet<string> _measuring = new();
 
         /// <summary>Knobs measured and found to re-topologise. Measuring them again would
@@ -86,13 +86,13 @@ namespace Polyfork.EditorTools
         string[] _classes = { "All types" };
 
         // ---- selection ------------------------------------------------------
-        PolyforkAsset _selected;
-        PolyforkParams _schema;
+        REMeshAsset _selected;
+        REMeshParams _schema;
         string _previewedAssetId;
 
         /// <summary>Slot binding for the object currently in the preview, so colour edits
         /// can be applied in place instead of re-fetching the GLB.</summary>
-        PolyforkColorSlots _previewSlots;
+        REMeshColorSlots _previewSlots;
         readonly Dictionary<string, float> _ranges = new();
 
         /// <summary>Structural choice and toggle knobs. The endpoint bakes these too, so
@@ -104,7 +104,7 @@ namespace Polyfork.EditorTools
         string _colorway;
         string _colorwayKnob;
 
-        readonly PolyforkRemixHistory _history = new();
+        readonly REMeshRemixHistory _history = new();
 
         /// <summary>True while the remix view has the window to itself.</summary>
         bool _remixing;
@@ -118,7 +118,7 @@ namespace Polyfork.EditorTools
         // ---- allowance ------------------------------------------------------
         double _rateLimitedUntil;
         bool _promptedForKey;
-        readonly PolyforkRemixBudget _budget = new();
+        readonly REMeshRemixBudget _budget = new();
 
         bool IsRateLimited => EditorApplication.timeSinceStartup < _rateLimitedUntil || _budget.IsExhausted;
 
@@ -130,7 +130,7 @@ namespace Polyfork.EditorTools
         /// of remote bakes froze the whole window - no preview, no knobs - on a machine that
         /// could rebuild every free asset locally and instantly.
         /// </summary>
-        bool MeteredFor(PolyforkAsset asset)
+        bool MeteredFor(REMeshAsset asset)
         {
             if (asset == null) return true;
             return (_bakers.Resolve(asset, _schema)?.ConsumesAllowance) ?? true;
@@ -142,7 +142,7 @@ namespace Polyfork.EditorTools
         /// <summary>
         /// What can be turned on THIS asset, by whichever baker would serve it.
         ///
-        /// PolyforkKnob.Support describes the server, and the server bakes only knobs marked
+        /// REMeshKnob.Support describes the server, and the server bakes only knobs marked
         /// `affects: geometry` - a missing `affects` reads as `colors` on its side. A local
         /// baker runs the asset's own module and honours whatever the module declares, so
         /// reading the static classification hid working controls: Large Coastal Boulder's
@@ -152,29 +152,29 @@ namespace Polyfork.EditorTools
         /// Colours are exempt. They are applied in place on the mesh either way, and that is
         /// not the baker's decision to make.
         /// </summary>
-        PolyforkKnobSupport SupportFor(PolyforkKnob knob)
+        REMeshKnobSupport SupportFor(REMeshKnob knob)
         {
-            if (knob == null) return PolyforkKnobSupport.Unsupported;
-            if (knob.Support == PolyforkKnobSupport.LocalRecolor) return PolyforkKnobSupport.LocalRecolor;
+            if (knob == null) return REMeshKnobSupport.Unsupported;
+            if (knob.Support == REMeshKnobSupport.LocalRecolor) return REMeshKnobSupport.LocalRecolor;
 
             var baker = _selected != null && _schema != null ? _bakers.Resolve(_selected, _schema) : null;
             return baker?.Supports(knob) ?? knob.Support;
         }
 
         /// <summary>Knobs worth drawing, ordered as the detail panel wants them.</summary>
-        IEnumerable<PolyforkKnob> UsableKnobs()
+        IEnumerable<REMeshKnob> UsableKnobs()
         {
-            if (_schema == null) return Enumerable.Empty<PolyforkKnob>();
+            if (_schema == null) return Enumerable.Empty<REMeshKnob>();
 
             return _schema.All
-                .Where(k => SupportFor(k) != PolyforkKnobSupport.Unsupported)
-                .OrderBy(k => SupportFor(k) == PolyforkKnobSupport.LocalRecolor ? 0 : 1)
-                .ThenBy(k => k.Type == PolyforkKnobType.Choice ? 0 : 1)
+                .Where(k => SupportFor(k) != REMeshKnobSupport.Unsupported)
+                .OrderBy(k => SupportFor(k) == REMeshKnobSupport.LocalRecolor ? 0 : 1)
+                .ThenBy(k => k.Type == REMeshKnobType.Choice ? 0 : 1)
                 .ThenBy(k => k.Name, StringComparer.Ordinal);
         }
         string _importMessage;
         MessageType _importMessageType = MessageType.Info;
-        string _importFolder = PolyforkAssetImporter.DefaultFolder;
+        string _importFolder = REMeshAssetImporter.DefaultFolder;
 
         Vector2 _gridScroll;
         Vector2 _detailScroll;
@@ -183,37 +183,37 @@ namespace Polyfork.EditorTools
         /// Who rebuilds geometry. A local baker outranks the server one whenever a JS engine
         /// is installed, which is what makes a slider drag instant and free.
         /// </summary>
-        readonly PolyforkBakerRegistry _bakers = new();
+        readonly REMeshBakerRegistry _bakers = new();
 
         /// <summary>The JS engine, if one is installed. Owned by this window.</summary>
-        IPolyforkJsRuntime _js;
+        IREMeshJsRuntime _js;
 
         /// <summary>Kept for its timings, which the status bar reports.</summary>
-        PolyforkLocalBaker _localBaker;
+        REMeshLocalBaker _localBaker;
 
         void OnEnable()
         {
             _cts = new CancellationTokenSource();
-            _client = new PolyforkClient { ApiKey = PolyforkCredentials.Resolve(null) };
-            _loader = new PolyforkGlbLoader(_client);
+            _client = new REMeshClient { ApiKey = REMeshCredentials.Resolve(null) };
+            _loader = new REMeshGlbLoader(_client);
 
-            _bakers.Register(new PolyforkServerBaker(_client, _loader, _budget));
+            _bakers.Register(new REMeshServerBaker(_client, _loader, _budget));
 
             /* Starting QuickJS means evaluating a 336 KB three.js bundle, so it happens once
              * per window rather than per bake. Returns null when no engine is installed, and
              * the registry then has only the server baker - which is exactly the old
              * behaviour, not a broken one. */
-            _js = PolyforkJsRuntimeProvider.TryCreate();
+            _js = REMeshJsRuntimeProvider.TryCreate();
             if (_js != null)
             {
-                _localBaker = new PolyforkLocalBaker(_js, _client);
+                _localBaker = new REMeshLocalBaker(_js, _client);
                 _bakers.Register(_localBaker);
             }
-            _thumbs = new PolyforkThumbnailCache(_client);
+            _thumbs = new REMeshThumbnailCache(_client);
             _thumbs.Changed += Repaint;
-            _preview = new PolyforkAssetPreview();
+            _preview = new REMeshAssetPreview();
 
-            PolyforkKeySettings.Changed += OnKeyChanged;
+            REMeshKeySettings.Changed += OnKeyChanged;
             EditorApplication.update += OnEditorUpdate;
             _ = RefreshAccessAsync();
             _ = LoadCatalogueAsync();
@@ -236,14 +236,14 @@ namespace Polyfork.EditorTools
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] could not read the remix allowance ({e.Message}).");
+                Debug.LogWarning($"[REMesh] could not read the remix allowance ({e.Message}).");
             }
             Repaint();
         }
 
         void OnDisable()
         {
-            PolyforkKeySettings.Changed -= OnKeyChanged;
+            REMeshKeySettings.Changed -= OnKeyChanged;
             EditorApplication.update -= OnEditorUpdate;
             _cts?.Cancel();
             _cts?.Dispose();
@@ -260,11 +260,11 @@ namespace Polyfork.EditorTools
         /// <summary>A newly saved key clears the limit and re-arms the client immediately.</summary>
         void OnKeyChanged()
         {
-            _client.ApiKey = PolyforkCredentials.Resolve(null);
+            _client.ApiKey = REMeshCredentials.Resolve(null);
             _rateLimitedUntil = 0d;
             _promptedForKey = false;
             _budget.Reset();
-            _status = PolyforkKeySettings.HasKey ? "API key active" : $"{_all.Count} assets";
+            _status = REMeshKeySettings.HasKey ? "API key active" : $"{_all.Count} assets";
             _ = RefreshAccessAsync();        // the new key almost certainly has a new tier
             QueuePreviewRebuild(immediate: true);
             Repaint();
@@ -274,14 +274,14 @@ namespace Polyfork.EditorTools
         /// Records a 429 and, once per session, opens the key prompt. Repeated limits after
         /// that only update the banner, so the window does not nag.
         /// </summary>
-        void HandleRateLimit(PolyforkRateLimitException e)
+        void HandleRateLimit(REMeshRateLimitException e)
         {
             _rateLimitedUntil = EditorApplication.timeSinceStartup + e.RetryAfter.TotalSeconds;
             _status = "Rate limited";
 
             if (_promptedForKey) return;
             _promptedForKey = true;
-            PolyforkApiKeyWindow.OpenRateLimited(e.RetryAfter);
+            REMeshApiKeyWindow.OpenRateLimited(e.RetryAfter);
         }
 
         /// <summary>
@@ -369,7 +369,7 @@ namespace Polyfork.EditorTools
                 // Settled: a real failure must not become a retry loop driven by OnGUI.
                 // Refresh is still there for a network that came back.
                 _catalogueSettled = true;
-                _status = $"Could not reach polyfork.dev: {e.Message}";
+                _status = $"Could not reach remesh.dev: {e.Message}";
             }
             finally
             {
@@ -380,7 +380,7 @@ namespace Polyfork.EditorTools
 
         void ApplyFilter()
         {
-            IEnumerable<PolyforkAsset> q = _all;
+            IEnumerable<REMeshAsset> q = _all;
 
             if (!string.IsNullOrWhiteSpace(_search))
             {
@@ -404,7 +404,7 @@ namespace Polyfork.EditorTools
         // Selection
         // =====================================================================
 
-        async void Select(PolyforkAsset asset)
+        async void Select(REMeshAsset asset)
         {
             if (asset == null || _selected == asset) return;
 
@@ -441,7 +441,7 @@ namespace Polyfork.EditorTools
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] no knob schema for {asset.Id}: {e.Message}");
+                Debug.LogWarning($"[REMesh] no knob schema for {asset.Id}: {e.Message}");
             }
 
             QueuePreviewRebuild(immediate: true);
@@ -461,19 +461,19 @@ namespace Polyfork.EditorTools
             {
                 switch (SupportFor(knob))
                 {
-                    case PolyforkKnobSupport.ServerRebuild when knob.Type == PolyforkKnobType.Choice:
+                    case REMeshKnobSupport.ServerRebuild when knob.Type == REMeshKnobType.Choice:
                         _choices[knob.Name] = knob.DefaultString ?? knob.Options.FirstOrDefault();
                         break;
-                    case PolyforkKnobSupport.ServerRebuild when knob.Type == PolyforkKnobType.Toggle:
+                    case REMeshKnobSupport.ServerRebuild when knob.Type == REMeshKnobType.Toggle:
                         _toggles[knob.Name] = knob.DefaultBool;
                         break;
-                    case PolyforkKnobSupport.ServerRebuild:
+                    case REMeshKnobSupport.ServerRebuild:
                         _ranges[knob.Name] = knob.DefaultFloat;
                         break;
-                    case PolyforkKnobSupport.LocalRecolor when knob.Type == PolyforkKnobType.Color:
-                        if (PolyforkParams.TryParseHex(knob.DefaultString, out var c)) _slotColors[knob.Name] = c;
+                    case REMeshKnobSupport.LocalRecolor when knob.Type == REMeshKnobType.Color:
+                        if (REMeshParams.TryParseHex(knob.DefaultString, out var c)) _slotColors[knob.Name] = c;
                         break;
-                    case PolyforkKnobSupport.LocalRecolor when knob.Type == PolyforkKnobType.Choice:
+                    case REMeshKnobSupport.LocalRecolor when knob.Type == REMeshKnobType.Choice:
                         _colorwayKnob ??= knob.Name;
                         _colorway ??= knob.DefaultString;
                         break;
@@ -491,11 +491,11 @@ namespace Polyfork.EditorTools
         /// that impossible rather than merely unlikely; the measurement registers its own set
         /// AFTER adopting, which is the one ordering that survives this.
         /// </summary>
-        void AdoptPreview(GameObject go, PolyforkAsset asset, bool frame)
+        void AdoptPreview(GameObject go, REMeshAsset asset, bool frame)
         {
             InvalidateMorphs();
 
-            _previewSlots = _schema != null ? PolyforkColorSlots.Build(go, _schema) : null;
+            _previewSlots = _schema != null ? REMeshColorSlots.Build(go, _schema) : null;
             if (_slotColors.Count > 0) _previewSlots?.Apply(_slotColors);
 
             _preview.SetTarget(go, frameCamera: frame);
@@ -503,7 +503,7 @@ namespace Polyfork.EditorTools
         }
 
         /// <summary>Bakes this asset with one knob overridden, for morph measurement.</summary>
-        async Task<GameObject> BakeAtAsync(PolyforkKnob knob, float value, CancellationToken ct)
+        async Task<GameObject> BakeAtAsync(REMeshKnob knob, float value, CancellationToken ct)
         {
             var values = BuildAllValues();
             values.SetNumber(knob.Name, knob.SnapToServerGrid(value));
@@ -511,7 +511,7 @@ namespace Polyfork.EditorTools
             var baker = _bakers.Resolve(_selected, _schema) ?? _bakers.Bakers.FirstOrDefault();
             if (baker == null) return null;
 
-            var request = new PolyforkBakeRequest(_selected, _schema, values);
+            var request = new REMeshBakeRequest(_selected, _schema, values);
 
             try
             {
@@ -539,7 +539,7 @@ namespace Polyfork.EditorTools
         /// The min bake owns the meshes the morph writes into, so it becomes the displayed
         /// model. Anything that re-topologises is left alone and keeps rebuilding.
         /// </summary>
-        async Task MeasureMorphAsync(PolyforkKnob knob)
+        async Task MeasureMorphAsync(REMeshKnob knob)
         {
             var asset = _selected;
             if (asset == null || knob == null) return;
@@ -552,7 +552,7 @@ namespace Polyfork.EditorTools
                 atMax = await BakeAtAsync(knob, knob.Max, _cts.Token);
                 if (atMin == null || atMax == null || _selected != asset) return;
 
-                var set = PolyforkMorphSet.Build(atMin, atMax, knob.Name, knob.Min, knob.Max);
+                var set = REMeshMorphSet.Build(atMin, atMax, knob.Name, knob.Min, knob.Max);
                 if (!set.IsMorphable)
                 {
                     // Re-topologises, so it can only ever be rebuilt. Say so once, and put the
@@ -580,7 +580,7 @@ namespace Polyfork.EditorTools
                  * two bakes, so a knob that fails and is not remembered costs two more failures
                  * per slider movement and fills the Console with the same warning. */
                 _unmorphable.Add(knob.Name);
-                Debug.LogWarning($"[Polyfork] could not measure '{knob.Name}' for morphing, so it "
+                Debug.LogWarning($"[REMesh] could not measure '{knob.Name}' for morphing, so it "
                                  + $"will rebuild instead: {e.Message}");
             }
             finally
@@ -647,9 +647,9 @@ namespace Polyfork.EditorTools
         /// the server's grid first, so dragging converges on URLs other people have already
         /// paid to bake.
         /// </summary>
-        PolyforkKnobValues BuildGeometryValues()
+        REMeshKnobValues BuildGeometryValues()
         {
-            var values = new PolyforkKnobValues();
+            var values = new REMeshKnobValues();
             if (_schema == null) return values;
 
             foreach (var kv in _ranges)
@@ -682,7 +682,7 @@ namespace Polyfork.EditorTools
         /// out everything it cannot bake and re-applies colour to the returned mesh, while a
         /// local baker runs the asset's own module and honours the whole set outright.
         /// </summary>
-        PolyforkKnobValues BuildAllValues()
+        REMeshKnobValues BuildAllValues()
         {
             var values = BuildGeometryValues();
             if (_schema == null) return values;
@@ -690,11 +690,11 @@ namespace Polyfork.EditorTools
             foreach (var kv in _slotColors)
             {
                 if (!_schema.Knobs.TryGetValue(kv.Key, out var knob)) continue;
-                if (knob.Type != PolyforkKnobType.Color) continue;
+                if (knob.Type != REMeshKnobType.Color) continue;
 
                 // Only what the user actually moved: an authored default is already in the
                 // mesh, and sending it would make an unchanged asset look like a variant.
-                if (PolyforkParams.TryParseHex(knob.DefaultString, out var authored) &&
+                if (REMeshParams.TryParseHex(knob.DefaultString, out var authored) &&
                     Mathf.Approximately(authored.r, kv.Value.r) &&
                     Mathf.Approximately(authored.g, kv.Value.g) &&
                     Mathf.Approximately(authored.b, kv.Value.b)) continue;
@@ -739,7 +739,7 @@ namespace Polyfork.EditorTools
                  * SAME asset - handing a baker the previous asset's model would rewrite the
                  * thing the user is still looking at. The baker checks the shape matches and
                  * builds a new one if not, so this is an optimisation and never a contract. */
-                var request = new PolyforkBakeRequest(asset, _schema, payload)
+                var request = new REMeshBakeRequest(asset, _schema, payload)
                 {
                     Reuse = _previewedAssetId == asset.Id ? _preview.Target : null,
                 };
@@ -761,12 +761,12 @@ namespace Polyfork.EditorTools
                      * the path that always works. Rigged assets are the case that found this -
                      * the module produces a hierarchy the bridge does not return meshes for,
                      * so the bake threw and Field Console simply never appeared. */
-                    Debug.LogWarning($"[Polyfork] {baker.Name} could not build {asset.Id} ({e.Message}).");
+                    Debug.LogWarning($"[REMesh] {baker.Name} could not build {asset.Id} ({e.Message}).");
                     go = null;
                 }
 
                 // Either failure mode - nothing returned, or a throw - gets the same second
-                // chance on whichever baker actually talks to polyfork.dev.
+                // chance on whichever baker actually talks to remesh.dev.
                 if (go == null && !baker.ConsumesAllowance)
                 {
                     var fallback = _bakers.Bakers.FirstOrDefault(b => b.ConsumesAllowance && b.IsAvailable);
@@ -775,7 +775,7 @@ namespace Polyfork.EditorTools
                     // being rate limited only rules out a fallback that would bake something.
                     if (fallback != null && (!IsRateLimited || payload.Count == 0))
                     {
-                        Debug.Log($"[Polyfork] rebuilding {asset.Id} on {fallback.Name}.");
+                        Debug.Log($"[REMesh] rebuilding {asset.Id} on {fallback.Name}.");
 
                         meters = fallback.ConsumesAllowance && payload.Count > 0;
                         _lastBakerName = fallback.Name;
@@ -791,7 +791,7 @@ namespace Polyfork.EditorTools
 
                 if (go == null)
                 {
-                    Debug.LogWarning($"[Polyfork] no baker could build {asset.Id}.");
+                    Debug.LogWarning($"[REMesh] no baker could build {asset.Id}.");
                     return;
                 }
 
@@ -813,7 +813,7 @@ namespace Polyfork.EditorTools
                      * colour array, and the knobs worth reusing a model for are exactly the
                      * ones that change how many vertices there are - so the old indices can
                      * point past the end. Cheap next to a bake, and wrong if skipped. */
-                    _previewSlots = _schema != null ? PolyforkColorSlots.Build(go, _schema) : null;
+                    _previewSlots = _schema != null ? REMeshColorSlots.Build(go, _schema) : null;
                     if (_slotColors.Count > 0) _previewSlots?.Apply(_slotColors);
                     return;
                 }
@@ -825,19 +825,19 @@ namespace Polyfork.EditorTools
             catch (OperationCanceledException)
             {
             }
-            catch (PolyforkRateLimitException e)
+            catch (REMeshRateLimitException e)
             {
                 HandleRateLimit(e);
             }
-            catch (PolyforkBakeUnavailableException e)
+            catch (REMeshBakeUnavailableException e)
             {
                 // Out of allowance. Keep the mesh that is already on screen rather than
                 // blanking the preview, and let the banner explain why it stopped moving.
-                Debug.LogWarning($"[Polyfork] {e.Message}");
+                Debug.LogWarning($"[REMesh] {e.Message}");
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] preview failed for {asset.Id}: {e.Message}");
+                Debug.LogWarning($"[REMesh] preview failed for {asset.Id}: {e.Message}");
             }
             finally
             {
@@ -855,7 +855,7 @@ namespace Polyfork.EditorTools
         // Undo / redo
         // =====================================================================
 
-        PolyforkRemixSnapshot Snapshot() => new()
+        REMeshRemixSnapshot Snapshot() => new()
         {
             Ranges = new Dictionary<string, float>(_ranges),
             Choices = new Dictionary<string, string>(_choices),
@@ -867,7 +867,7 @@ namespace Polyfork.EditorTools
         /// <summary>Call immediately before mutating knob state.</summary>
         void RecordUndo(string opKey) => _history.Record(Snapshot(), opKey);
 
-        void RestoreSnapshot(PolyforkRemixSnapshot state)
+        void RestoreSnapshot(REMeshRemixSnapshot state)
         {
             if (state == null) return;
 
@@ -947,12 +947,12 @@ namespace Polyfork.EditorTools
 
             HandleUndoCommands();
 
-            PolyforkBrand.DrawHeader(
+            REMeshBrand.DrawHeader(
                 _all.Count > 0 ? $"{_all.Count} assets" : "Browse, remix and import",
                 () =>
                 {
                     if (GUILayout.Button("Account", EditorStyles.miniButton, GUILayout.Width(64f)))
-                        Application.OpenURL(PolyforkKeySettings.AccountUrl);
+                        Application.OpenURL(REMeshKeySettings.AccountUrl);
                 });
 
             /* Remixing takes the whole window, with the grid left behind rather than
@@ -999,7 +999,7 @@ namespace Polyfork.EditorTools
                         EditorStyles.wordWrappedMiniLabel);
 
                     if (GUILayout.Button("Get more", GUILayout.Width(96f), GUILayout.Height(20f)))
-                        PolyforkApiKeyWindow.Open();
+                        REMeshApiKeyWindow.Open();
                 }
                 return;
             }
@@ -1015,7 +1015,7 @@ namespace Polyfork.EditorTools
                     EditorStyles.wordWrappedMiniLabel);
 
                 if (GUILayout.Button("Add API key", GUILayout.Width(96f), GUILayout.Height(20f)))
-                    PolyforkApiKeyWindow.Open();
+                    REMeshApiKeyWindow.Open();
             }
         }
 
@@ -1049,9 +1049,9 @@ namespace Polyfork.EditorTools
 
                 GUILayout.FlexibleSpace();
 
-                var keyed = PolyforkKeySettings.HasKey || !string.IsNullOrEmpty(_client?.ApiKey);
+                var keyed = REMeshKeySettings.HasKey || !string.IsNullOrEmpty(_client?.ApiKey);
                 if (GUILayout.Button(keyed ? "Key active" : "Add API key", EditorStyles.toolbarButton, GUILayout.Width(84f)))
-                    PolyforkApiKeyWindow.Open();
+                    REMeshApiKeyWindow.Open();
 
                 using (new EditorGUI.DisabledScope(_loading))
                 {
@@ -1163,7 +1163,7 @@ namespace Polyfork.EditorTools
             EditorGUILayout.EndScrollView();
         }
 
-        void DrawCard(PolyforkAsset asset, bool fetchThumbnail = true)
+        void DrawCard(REMeshAsset asset, bool fetchThumbnail = true)
         {
             var rect = GUILayoutUtility.GetRect(CardSize, CardSize + 26f, GUILayout.Width(CardSize),
                 GUILayout.Height(CardSize + 26f));
@@ -1171,7 +1171,7 @@ namespace Polyfork.EditorTools
             var selected = _selected == asset;
             if (Event.current.type == EventType.Repaint)
             {
-                var accent = PolyforkBrand.Accent;
+                var accent = REMeshBrand.Accent;
                 var bg = selected
                     ? new Color(accent.r, accent.g, accent.b, 0.45f)
                     : new Color(0f, 0f, 0f, 0.16f);
@@ -1243,7 +1243,7 @@ namespace Polyfork.EditorTools
              * has something to turn. */
             using (new EditorGUI.DisabledScope(_schema == null || !UsableKnobs().Any()))
             {
-                if (GUILayout.Button("Remix this asset", PolyforkLocalBakingWindow.PrimaryButton,
+                if (GUILayout.Button("Remix this asset", REMeshLocalBakingWindow.PrimaryButton,
                         GUILayout.Height(32f)))
                 {
                     _remixing = true;
@@ -1290,12 +1290,12 @@ namespace Polyfork.EditorTools
             {
                 var what = knob.Type switch
                 {
-                    PolyforkKnobType.Range => knob.IsIntegral
+                    REMeshKnobType.Range => knob.IsIntegral
                         ? $"{knob.Min:0}-{knob.Max:0}"
                         : $"{knob.Min:0.##} to {knob.Max:0.##}",
-                    PolyforkKnobType.Choice => $"{knob.Options.Count} options",
-                    PolyforkKnobType.Toggle => "on / off",
-                    PolyforkKnobType.Color => "colour",
+                    REMeshKnobType.Choice => $"{knob.Options.Count} options",
+                    REMeshKnobType.Toggle => "on / off",
+                    REMeshKnobType.Color => "colour",
                     _ => ""
                 };
 
@@ -1307,7 +1307,7 @@ namespace Polyfork.EditorTools
                 }
             }
 
-            var hidden = _schema.All.Count(k => SupportFor(k) == PolyforkKnobSupport.Unsupported);
+            var hidden = _schema.All.Count(k => SupportFor(k) == REMeshKnobSupport.Unsupported);
             if (hidden > 0)
             {
                 EditorGUILayout.LabelField(
@@ -1338,22 +1338,22 @@ namespace Polyfork.EditorTools
             {
                 switch (knob.Type)
                 {
-                    case PolyforkKnobType.Choice when SupportFor(knob) == PolyforkKnobSupport.LocalRecolor:
+                    case REMeshKnobType.Choice when SupportFor(knob) == REMeshKnobSupport.LocalRecolor:
                         DrawColorwayKnob(knob);
                         break;
-                    case PolyforkKnobType.Choice: DrawChoiceKnob(knob); break;
-                    case PolyforkKnobType.Toggle: DrawToggleKnob(knob); break;
-                    case PolyforkKnobType.Color: DrawColorKnob(knob); break;
-                    case PolyforkKnobType.Range: DrawRangeKnob(knob); break;
+                    case REMeshKnobType.Choice: DrawChoiceKnob(knob); break;
+                    case REMeshKnobType.Toggle: DrawToggleKnob(knob); break;
+                    case REMeshKnobType.Color: DrawColorKnob(knob); break;
+                    case REMeshKnobType.Range: DrawRangeKnob(knob); break;
                 }
             }
 
-            var hidden = _schema.All.Count(k => SupportFor(k) == PolyforkKnobSupport.Unsupported);
+            var hidden = _schema.All.Count(k => SupportFor(k) == REMeshKnobSupport.Unsupported);
             if (hidden > 0)
             {
                 EditorGUILayout.Space(2f);
                 EditorGUILayout.LabelField(
-                    $"{hidden} knob{(hidden == 1 ? "" : "s")} hidden - Polyfork does not bake {(hidden == 1 ? "it" : "them")} " +
+                    $"{hidden} knob{(hidden == 1 ? "" : "s")} hidden - REMesh does not bake {(hidden == 1 ? "it" : "them")} " +
                     "from a GLB. The asset's own module does; see the Local Baking sample.",
                     EditorStyles.miniLabel);
             }
@@ -1384,7 +1384,7 @@ namespace Polyfork.EditorTools
             }
         }
 
-        void DrawColorwayKnob(PolyforkKnob knob)
+        void DrawColorwayKnob(REMeshKnob knob)
         {
             EditorGUILayout.LabelField(knob.Label, EditorStyles.miniBoldLabel);
 
@@ -1404,7 +1404,7 @@ namespace Polyfork.EditorTools
                     EditorGUI.DrawRect(rect, swatch);
 
                     if (_colorway == option)
-                        EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 2f, rect.width, 2f), PolyforkBrand.Accent);
+                        EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 2f, rect.width, 2f), REMeshBrand.Accent);
 
                     if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
                     {
@@ -1420,14 +1420,14 @@ namespace Polyfork.EditorTools
         /// The chip shown for a colourway option: its most prominent slot colour, or for the
         /// authored default, that knob's own published hex.
         /// </summary>
-        Color SwatchFor(PolyforkKnob knob, string option, bool isAuthored)
+        Color SwatchFor(REMeshKnob knob, string option, bool isAuthored)
         {
             if (isAuthored)
             {
                 var defaults = _schema.DefaultSlotColors();
                 foreach (var slot in defaults)
                 {
-                    if (_schema.Knobs.TryGetValue(slot.Key, out var k) && k.Type == PolyforkKnobType.Color)
+                    if (_schema.Knobs.TryGetValue(slot.Key, out var k) && k.Type == REMeshKnobType.Color)
                         return slot.Value;
                 }
                 return Color.gray;
@@ -1437,7 +1437,7 @@ namespace Polyfork.EditorTools
             {
                 foreach (var kv in slots)
                 {
-                    if (PolyforkParams.TryParseHex(kv.Value, out var c)) return c;
+                    if (REMeshParams.TryParseHex(kv.Value, out var c)) return c;
                 }
             }
             return Color.gray;
@@ -1463,7 +1463,7 @@ namespace Polyfork.EditorTools
             {
                 foreach (var kv in slots)
                 {
-                    if (PolyforkParams.TryParseHex(kv.Value, out var c)) _slotColors[kv.Key] = c;
+                    if (REMeshParams.TryParseHex(kv.Value, out var c)) _slotColors[kv.Key] = c;
                 }
             }
 
@@ -1483,7 +1483,7 @@ namespace Polyfork.EditorTools
             Repaint();
         }
 
-        void DrawColorKnob(PolyforkKnob knob)
+        void DrawColorKnob(REMeshKnob knob)
         {
             _slotColors.TryGetValue(knob.Name, out var current);
 
@@ -1500,7 +1500,7 @@ namespace Polyfork.EditorTools
         }
 
         /// <summary>
-        /// A structural choice: piece, layout, tower height. Polyfork bakes these, so they
+        /// A structural choice: piece, layout, tower height. REMesh bakes these, so they
         /// cost a round trip and an allowance exactly like a slider does.
         ///
         /// The option is sent as the literal string the schema published, never parsed into
@@ -1508,7 +1508,7 @@ namespace Polyfork.EditorTools
         /// them strictly, so a helpfully-converted 12 matches nothing and quietly returns
         /// the default mesh.
         /// </summary>
-        void DrawChoiceKnob(PolyforkKnob knob)
+        void DrawChoiceKnob(REMeshKnob knob)
         {
             if (knob.Options.Count == 0) return;
 
@@ -1520,7 +1520,7 @@ namespace Polyfork.EditorTools
             var label = new GUIContent(
                 knob.Label,
                 BlockedByAllowance ? "Out of server bakes - add an API key, or install a local engine "
-                    + "from Polyfork \u25b8 Setup to bake for free." : knob.Describe);
+                    + "from REMesh \u25b8 Setup to bake for free." : knob.Describe);
 
             EditorGUI.BeginChangeCheck();
             var next = EditorGUILayout.Popup(label, index, knob.Options.Select(o => new GUIContent(o)).ToArray());
@@ -1532,7 +1532,7 @@ namespace Polyfork.EditorTools
         }
 
         /// <summary>A structural toggle. Baked server-side, same as a choice.</summary>
-        void DrawToggleKnob(PolyforkKnob knob)
+        void DrawToggleKnob(REMeshKnob knob)
         {
             if (!_toggles.TryGetValue(knob.Name, out var current)) current = knob.DefaultBool;
 
@@ -1541,7 +1541,7 @@ namespace Polyfork.EditorTools
             var label = new GUIContent(
                 knob.Label,
                 BlockedByAllowance ? "Out of server bakes - add an API key, or install a local engine "
-                    + "from Polyfork \u25b8 Setup to bake for free." : knob.Describe);
+                    + "from REMesh \u25b8 Setup to bake for free." : knob.Describe);
 
             EditorGUI.BeginChangeCheck();
             var next = EditorGUILayout.Toggle(label, current);
@@ -1552,7 +1552,7 @@ namespace Polyfork.EditorTools
             QueuePreviewRebuild(immediate: true);
         }
 
-        void DrawRangeKnob(PolyforkKnob knob)
+        void DrawRangeKnob(REMeshKnob knob)
         {
             _ranges.TryGetValue(knob.Name, out var current);
 
@@ -1563,7 +1563,7 @@ namespace Polyfork.EditorTools
             var label = new GUIContent(
                 knob.Label,
                 BlockedByAllowance ? "Out of server bakes - add an API key, or install a local engine "
-                    + "from Polyfork \u25b8 Setup to bake for free." : knob.Describe);
+                    + "from REMesh \u25b8 Setup to bake for free." : knob.Describe);
 
             EditorGUI.BeginChangeCheck();
             float next;
@@ -1621,16 +1621,16 @@ namespace Polyfork.EditorTools
             {
                 EditorGUILayout.HelpBox(
                     $"{_selected.Title} is {_selected.AccessLabel()}. Remix and preview it as much as " +
-                    "you like; importing it needs a Polyfork Pro plan.",
+                    "you like; importing it needs a REMesh Pro plan.",
                     MessageType.None);
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     if (GUILayout.Button("Unlock with Pro", GUILayout.Height(24f)))
-                        Application.OpenURL(PolyforkKeySettings.PricingUrl);
+                        Application.OpenURL(REMeshKeySettings.PricingUrl);
 
                     if (GUILayout.Button("I have a key", GUILayout.Height(24f), GUILayout.Width(110f)))
-                        PolyforkApiKeyWindow.Open();
+                        REMeshApiKeyWindow.Open();
                 }
             }
             else
@@ -1644,8 +1644,8 @@ namespace Polyfork.EditorTools
                 }
             }
 
-            if (GUILayout.Button("Open on polyfork.dev", EditorStyles.miniButton))
-                Application.OpenURL(_selected.Page ?? "https://polyfork.dev");
+            if (GUILayout.Button("Open on remesh.dev", EditorStyles.miniButton))
+                Application.OpenURL(_selected.Page ?? "https://remesh.dev");
 
             if (!string.IsNullOrEmpty(_importMessage))
                 EditorGUILayout.HelpBox(_importMessage, _importMessageType);
@@ -1676,7 +1676,7 @@ namespace Polyfork.EditorTools
                 instance.transform.position = cam.position + cam.forward * 4f;
             }
 
-            Undo.RegisterCreatedObjectUndo(instance, "Import Polyfork asset");
+            Undo.RegisterCreatedObjectUndo(instance, "Import REMesh asset");
             Selection.activeGameObject = instance;
             return instance;
         }
@@ -1701,7 +1701,7 @@ namespace Polyfork.EditorTools
 
             /* All the values, not just geometry: a local import runs the module, which honours
              * colour too, and the server path strips what it cannot use anyway. */
-            var result = await PolyforkAssetImporter.ImportAsync(
+            var result = await REMeshAssetImporter.ImportAsync(
                 _client, _loader, asset, _schema, BuildAllValues(), _slotColors, _importFolder,
                 _bakers.Resolve(asset, _schema), _cts.Token);
 
@@ -1732,7 +1732,7 @@ namespace Polyfork.EditorTools
                 _importMessageType = MessageType.Error;
 
                 if (result.RateLimited)
-                    HandleRateLimit(new PolyforkRateLimitException("import", result.RetryAfter));
+                    HandleRateLimit(new REMeshRateLimitException("import", result.RetryAfter));
             }
 
             Repaint();
@@ -1763,7 +1763,7 @@ namespace Polyfork.EditorTools
                 if (_js != null)
                 {
                     var style = new GUIStyle(EditorStyles.miniLabel);
-                    style.normal.textColor = PolyforkBrand.Accent;
+                    style.normal.textColor = REMeshBrand.Accent;
                     /* The last bake's cost, on screen rather than in a log nobody opens.
                      * The split is the useful part: engine time means the module is what is
                      * slow, decode time means the payload crossing the JS boundary is. */
@@ -1799,18 +1799,18 @@ namespace Polyfork.EditorTools
                                   $"{_localBaker?.LastPayloadKb ?? 0} KB, " +
                                   $"{(rest < 0d ? 0d : rest):0} ms building the meshes and swapping " +
                                   "the preview. A server bake is about 120 ms and spends allowance."
-                                : $"Geometry is rebuilt here by {PolyforkJsRuntimeProvider.EngineName}: " +
+                                : $"Geometry is rebuilt here by {REMeshJsRuntimeProvider.EngineName}: " +
                                   "instant, and it spends no allowance."),
                         style);
                     GUILayout.Space(10f);
                 }
                 else if (GUILayout.Button(
                              new GUIContent("Setup",
-                                 "Geometry is currently rebuilt by polyfork.dev: about 120 ms, and " +
+                                 "Geometry is currently rebuilt by remesh.dev: about 120 ms, and " +
                                  "metered. A local engine makes it instant and free."),
                              EditorStyles.toolbarButton))
                 {
-                    PolyforkLocalBakingWindow.Open();
+                    REMeshLocalBakingWindow.Open();
                 }
 
                 GUILayout.Space(10f);
@@ -1819,7 +1819,7 @@ namespace Polyfork.EditorTools
         }
     }
 
-    internal static class PolyforkAssetExtensions
+    internal static class REMeshAssetExtensions
     {
         /// <summary>
         /// What this connection may do with the asset, in words.
@@ -1828,7 +1828,7 @@ namespace Polyfork.EditorTools
         /// asset, with price_note saying paid assets are not sold separately and that `plan`
         /// is the field to read.
         /// </summary>
-        public static string AccessLabel(this PolyforkAsset asset) =>
+        public static string AccessLabel(this REMeshAsset asset) =>
             asset.Free ? "free"
             : asset.Owned ? "owned"
             : $"included in {(string.IsNullOrEmpty(asset.Plan) ? "Pro" : asset.Plan)}";

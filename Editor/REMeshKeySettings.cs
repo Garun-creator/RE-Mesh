@@ -1,7 +1,7 @@
 using System;
 using UnityEditor;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Stores the API key in EditorPrefs.
@@ -11,20 +11,20 @@ namespace Polyfork.EditorTools
     /// use a StreamingAssets key file; this is for working in the editor.
     /// </summary>
     [InitializeOnLoad]
-    public static class PolyforkKeySettings
+    public static class REMeshKeySettings
     {
-        const string PrefKey = "Polyfork.ApiKey";
+        const string PrefKey = "REMesh.ApiKey";
 
-        public const string AccountUrl = "https://polyfork.dev/account";
-        public const string PricingUrl = "https://polyfork.dev/pricing";
+        public const string AccountUrl = "https://remesh.dev/account";
+        public const string PricingUrl = "https://remesh.dev/pricing";
 
         /// <summary>Raised after the stored key changes, so clients can re-arm.</summary>
         public static event Action Changed;
 
-        static PolyforkKeySettings()
+        static REMeshKeySettings()
         {
             // Let runtime code see the editor-entered key without referencing UnityEditor.
-            PolyforkCredentials.ExternalProvider = Get;
+            REMeshCredentials.ExternalProvider = Get;
         }
 
         public static string Get() => EditorPrefs.GetString(PrefKey, string.Empty);

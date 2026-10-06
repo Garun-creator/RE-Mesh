@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Reports whether local baking is running, and what to do when it is not.
@@ -18,7 +18,7 @@ namespace Polyfork.EditorTools
     /// What is left is a status page. There is nothing to install, so the only questions
     /// worth answering are whether the engine started, and if not, why.
     /// </summary>
-    public sealed class PolyforkLocalBakingWindow : EditorWindow
+    public sealed class REMeshLocalBakingWindow : EditorWindow
     {
         /* The engine that would clash with ours. Anyone who used the old installer still has
          * these, and Unity refuses to import two native plugins with the same file name from
@@ -30,20 +30,20 @@ namespace Polyfork.EditorTools
             "com.tencent.puerts.quickjs",
         };
 
-        [MenuItem("Tools/Polyfork/Setup", priority = 3)]
+        [MenuItem("Tools/MESHRA/Setup", priority = 3)]
         public static void Open()
         {
-            var window = GetWindow<PolyforkLocalBakingWindow>(true, "Polyfork Setup");
+            var window = GetWindow<REMeshLocalBakingWindow>(true, "MESHRA Setup");
             window.minSize = new Vector2(430f, 300f);
             window.Show();
         }
 
-        static bool EngineReady => PolyforkJsRuntimeProvider.IsAvailable;
+        static bool EngineReady => REMeshJsRuntimeProvider.IsAvailable;
 
         static string EngineName =>
-            string.IsNullOrEmpty(PolyforkJsRuntimeProvider.EngineName)
+            string.IsNullOrEmpty(REMeshJsRuntimeProvider.EngineName)
                 ? "QuickJS"
-                : PolyforkJsRuntimeProvider.EngineName;
+                : REMeshJsRuntimeProvider.EngineName;
 
         /// <summary>
         /// The old packages, detected by assembly rather than by reading the project's package
@@ -69,7 +69,7 @@ namespace Polyfork.EditorTools
          * as absent. */
         static bool OwnEnginePresent =>
             AppDomain.CurrentDomain.GetAssemblies()
-                .Any(a => a.GetName().Name == "Polyfork.Puerts");
+                .Any(a => a.GetName().Name == "REMesh.Puerts");
 
         Vector2 _scroll;
 
@@ -104,13 +104,13 @@ namespace Polyfork.EditorTools
 
             EditorGUILayout.Space(10f);
             if (GUILayout.Button("Run a smoke test", GUILayout.Height(26f)))
-                EditorApplication.ExecuteMenuItem("Tools/Polyfork/Diagnostics/Smoke-test local baking");
+                EditorApplication.ExecuteMenuItem("Tools/MESHRA/Diagnostics/Smoke-test local baking");
         }
 
         void DrawNotRunning()
         {
             EditorGUILayout.HelpBox(
-                "Models rebuild on polyfork.dev: roughly 120 ms per change, and each one spends "
+                "Models rebuild on cloud fallback: roughly 120 ms per change, and each one spends "
                 + "part of your hourly allowance.",
                 MessageType.Info);
 
@@ -123,7 +123,7 @@ namespace Polyfork.EditorTools
              * attribution licence. One wording has to be true in both. */
             Bullet("An optional JavaScript engine runs each model's own program in the editor, "
                    + "so a slider costs a few milliseconds and no request. It is in the GitHub "
-                   + "build at github.com/lucas-martinic/polyfork-unity-connector.");
+                   + "build at github.com/SKYGOD07/MESHRA.");
             Bullet("It is editor-only and desktop-only: Windows, macOS and Linux on x64, plus "
                    + "Apple Silicon. It never reaches a player build, so a shipped game rebuilds "
                    + "through the API either way.");
@@ -134,13 +134,13 @@ namespace Polyfork.EditorTools
 
             EditorGUILayout.Space(10f);
             if (GUILayout.Button("Run a smoke test", GUILayout.Height(26f)))
-                EditorApplication.ExecuteMenuItem("Tools/Polyfork/Diagnostics/Smoke-test local baking");
+                EditorApplication.ExecuteMenuItem("Tools/MESHRA/Diagnostics/Smoke-test local baking");
         }
 
         void DrawLegacyConflict(string[] legacy)
         {
             EditorGUILayout.HelpBox(
-                "Remove the PuerTS packages from this project. The engine is built into Polyfork "
+                "Remove the PuerTS packages from this project. The engine is built into MESHRA "
                 + "now, and two copies of it cannot coexist: Unity rejects two native plugins "
                 + "with the same file name, so the project will not compile until one goes.",
                 MessageType.Error);
@@ -184,10 +184,10 @@ namespace Polyfork.EditorTools
                     fontStyle = FontStyle.Bold,
                     alignment = TextAnchor.MiddleCenter
                 };
-                style.normal.textColor = PolyforkBrand.Accent;
-                style.hover.textColor = PolyforkBrand.Accent;
-                style.focused.textColor = PolyforkBrand.Accent;
-                style.active.textColor = PolyforkBrand.Accent;
+                style.normal.textColor = MeshRABrand.Accent;
+                style.hover.textColor = MeshRABrand.Accent;
+                style.focused.textColor = MeshRABrand.Accent;
+                style.active.textColor = MeshRABrand.Accent;
                 return style;
             }
         }
