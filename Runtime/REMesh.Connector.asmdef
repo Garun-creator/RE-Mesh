@@ -1,6 +1,6 @@
 {
-    "name": "Polyfork.Connector",
-    "rootNamespace": "Polyfork",
+    "name": "REMesh.Connector",
+    "rootNamespace": "REMesh",
     "references": [
         "glTFast",
         "Unity.Nuget.Newtonsoft-Json"

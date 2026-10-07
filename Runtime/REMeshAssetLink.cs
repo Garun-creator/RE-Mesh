@@ -1,9 +1,9 @@
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
-    /// Remembers which Polyfork asset a GameObject is, and what its knobs were set to.
+    /// Remembers which REMesh asset a GameObject is, and what its knobs were set to.
     ///
     /// Without this an imported model is an anonymous mesh the moment it lands in the
     /// project: the knob values that produced it live only in the window that made it, so
@@ -17,8 +17,8 @@ namespace Polyfork
     /// prefab.
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Polyfork/Polyfork Asset Link")]
-    public sealed class PolyforkAssetLink : MonoBehaviour
+    [AddComponentMenu("REMesh/REMesh Asset Link")]
+    public sealed class REMeshAssetLink : MonoBehaviour
     {
         [Tooltip("Catalogue id, e.g. street-lamp-29f365.")]
         public string assetId;
@@ -32,7 +32,7 @@ namespace Polyfork
         /// Stored as text rather than typed fields because the knobs belong to the asset,
         /// not to this component. A model with a `bays` knob and one with a `towerHeight`
         /// knob cannot share a struct, and inventing one here would be the client deciding
-        /// what a Polyfork asset is allowed to have - which is the one thing this package
+        /// what a REMesh asset is allowed to have - which is the one thing this package
         /// exists not to do.
         /// </summary>
         [Tooltip("Knob values as JSON. Empty means the asset at its published defaults.")]
@@ -44,6 +44,6 @@ namespace Polyfork
         /// <summary>True when the object is still exactly as published.</summary>
         public bool IsDefault => string.IsNullOrWhiteSpace(knobValues) || knobValues.Trim() == "{}";
 
-        public PolyforkKnobValues Values => PolyforkKnobValues.FromJson(knobValues);
+        public REMeshKnobValues Values => REMeshKnobValues.FromJson(knobValues);
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// How an engine integration makes itself available without the core assembly knowing
@@ -12,18 +12,18 @@ namespace Polyfork
     /// factory here at load, and the catalog picks it up if one arrived. Referencing the
     /// engine directly would make the whole connector require it.
     /// </summary>
-    public static class PolyforkJsRuntimeProvider
+    public static class REMeshJsRuntimeProvider
     {
         /// <summary>Set by an engine integration at load. Null when none is installed.</summary>
-        public static Func<IPolyforkJsRuntime> Factory { get; set; }
+        public static Func<IREMeshJsRuntime> Factory { get; set; }
 
         public static string EngineName { get; set; }
 
         public static bool IsAvailable => Factory != null;
 
         /// <summary>The trimmed three.js bundle and the bake bridge, shipped with the package.</summary>
-        public const string ThreeBundleResource = "Polyfork/three-runtime";
-        public const string BridgeResource = "Polyfork/polyfork-bridge";
+        public const string ThreeBundleResource = "REMesh/three-runtime";
+        public const string BridgeResource = "REMesh/remesh-bridge";
 
         /// <summary>
         /// Supplies the two scripts, set by the editor assembly at load.
@@ -43,7 +43,7 @@ namespace Polyfork
         /// Builds and initialises a runtime, or returns null if none is installed or the
         /// scripts are missing. Failure is never fatal: the caller falls back to the server.
         /// </summary>
-        public static IPolyforkJsRuntime TryCreate()
+        public static IREMeshJsRuntime TryCreate()
         {
             if (!IsAvailable) return null;
 
@@ -58,7 +58,7 @@ namespace Polyfork
 
             if (string.IsNullOrEmpty(threeText) || string.IsNullOrEmpty(bridgeText))
             {
-                Debug.LogWarning("[Polyfork] the JS runtime scripts could not be found; " +
+                Debug.LogWarning("[REMesh] the JS runtime scripts could not be found; " +
                                  "falling back to server baking.");
                 return null;
             }
@@ -76,8 +76,8 @@ namespace Polyfork
                  * a one-line diagnosis into an afternoon: the message alone cannot say which
                  * script, which step, or which frame. */
                 Debug.LogWarning(
-                    $"[Polyfork] {EngineName ?? "JS"} runtime failed to start; falling back to " +
-                    $"server baking. Geometry still rebuilds, just on polyfork.dev.\n{e}");
+                    $"[REMesh] {EngineName ?? "JS"} runtime failed to start; falling back to " +
+                    $"server baking. Geometry still rebuilds, just on remesh.dev.\n{e}");
                 return null;
             }
         }

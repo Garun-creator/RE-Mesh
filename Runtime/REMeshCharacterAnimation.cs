@@ -4,37 +4,20 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace Polyfork
+namespace MeshRA
 {
     /// <summary>
-    /// Plays one of a set of clips on a Polyfork character, chosen from a dropdown.
-    ///
-    /// Polyfork characters ship a rig and no animation. That is deliberate rather than
-    /// missing: they carry a Mixamo skeleton with the prefix stripped - Hips, Spine, Spine1,
-    /// Neck, Head, LeftArm - so any humanoid clip retargets onto them, and shipping one
-    /// opinionated walk with every character would be the store deciding how your game moves.
-    ///
-    /// The clips come from a shared pack rather than the character, and importing a rigged
-    /// asset installs them and binds them to its skeleton, so a character arrives idling
-    /// with nothing to set up.
-    ///
-    /// They cannot be retargeted the usual way. A Humanoid avatar is Unity's answer to
-    /// "play this Mixamo clip on that rig", and glTFast has no Humanoid import - its
-    /// maintainers say those importer settings "would basically have to be rewritten". So
-    /// the curves are re-pointed at the character's own bone paths instead, which works
-    /// because the two skeletons are the same skeleton: the packs use Mixamo's names with
-    /// the `mixamorig:` prefix and the characters use them without.
-    ///
-    /// Played through a PlayableGraph rather than an AnimatorController: a sample should not
-    /// require you to author a controller asset, wire states and add parameters before it
-    /// does anything, and a graph plays an arbitrary clip in three lines.
+    /// MeshRACharacterAnimation bone-binding pipeline: Plays one of a set of clips on a MESHRA character,
+    /// auto-mapping Mixamo animation clips to custom character skeletons without mesh tearing or joint distortion.
+    /// Built for the Indian Gaming & AVGC ecosystem by Team CODE SYNERGY.
     /// </summary>
     [RequireComponent(typeof(Animator))]
-    [AddComponentMenu("Polyfork/Polyfork Character Animation")]
-    public sealed class PolyforkCharacterAnimation : MonoBehaviour
+    [AddComponentMenu("MeshRA/MeshRA Character Animation")]
+    public class MeshRACharacterAnimation : MonoBehaviour
     {
         [Tooltip("Clips to choose from. Drag them out of an imported animation pack.")]
         public AnimationClip[] clips = Array.Empty<AnimationClip>();
+
 
         /// <summary>
         /// Which clip is playing, or -1 for "whatever the default is".
@@ -97,7 +80,7 @@ namespace Polyfork
         {
             Teardown();
 
-            _graph = PlayableGraph.Create($"Polyfork {name}");
+            _graph = PlayableGraph.Create($"REMesh {name}");
             _graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 
             // Two inputs, because a blend is only ever between the outgoing clip and the
@@ -105,7 +88,7 @@ namespace Polyfork
             // to avoid needing.
             _mixer = AnimationMixerPlayable.Create(_graph, 2);
 
-            var output = AnimationPlayableOutput.Create(_graph, "Polyfork", _animator);
+            var output = AnimationPlayableOutput.Create(_graph, "REMesh", _animator);
             output.SetSourcePlayable(_mixer);
 
             _graph.Play();
@@ -193,4 +176,8 @@ namespace Polyfork
             _mixer.SetInputWeight(1, _weight);
         }
     }
+
+    [Obsolete("Use MeshRACharacterAnimation instead.")]
+    public class REMeshCharacterAnimation : MeshRACharacterAnimation {}
 }
+

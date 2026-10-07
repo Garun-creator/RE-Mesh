@@ -1,6 +1,6 @@
 using System;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Tracks how many remix bakes are left, so the package can be polite about a shared
@@ -14,7 +14,7 @@ namespace Polyfork
     /// assumed rather than plenty. Guessing high spends someone else's quota; guessing low
     /// only costs a little latency.
     /// </summary>
-    public sealed class PolyforkRemixBudget
+    public sealed class REMeshRemixBudget
     {
         /// <summary>Assumed remaining when the server has not told us. Deliberately small.</summary>
         public const int UnknownFloor = 5;
@@ -32,7 +32,7 @@ namespace Polyfork
         int? _remaining;
         DateTime _exhaustedUntilUtc = DateTime.MinValue;
 
-        public PolyforkAccess Access { get; private set; }
+        public REMeshAccess Access { get; private set; }
 
         public bool Synced { get; private set; }
 
@@ -59,7 +59,7 @@ namespace Polyfork
             ? int.MaxValue
             : Math.Max(0, Effective - InteractiveReserve);
 
-        public void SyncFrom(PolyforkAccess access)
+        public void SyncFrom(REMeshAccess access)
         {
             Access = access;
             _remaining = access?.Remaining;

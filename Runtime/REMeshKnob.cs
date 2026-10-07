@@ -5,9 +5,9 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
-    public enum PolyforkKnobType
+    public enum REMeshKnobType
     {
         Unknown = 0,
         Color,
@@ -19,9 +19,9 @@ namespace Polyfork
     /// <summary>
     /// How a knob's value can actually be realised on this client.
     /// </summary>
-    public enum PolyforkKnobSupport
+    public enum REMeshKnobSupport
     {
-        /// <summary>Polyfork rebuilds the mesh server-side: refetch the remix GLB.</summary>
+        /// <summary>REMesh rebuilds the mesh server-side: refetch the remix GLB.</summary>
         ServerRebuild,
 
         /// <summary>Applied locally by recolouring vertex-colour slots. No network.</summary>
@@ -36,13 +36,13 @@ namespace Polyfork
     }
 
     /// <summary>
-    /// One typed knob exactly as published in https://polyfork.dev/cdn/{id}-params.json.
-    /// Every field here is Polyfork's own metadata; the connector never invents a parameter.
+    /// One typed knob exactly as published in https://remesh.dev/cdn/{id}-params.json.
+    /// Every field here is REMesh's own metadata; the connector never invents a parameter.
     /// </summary>
-    public sealed class PolyforkKnob
+    public sealed class REMeshKnob
     {
         public string Name { get; private set; }
-        public PolyforkKnobType Type { get; private set; }
+        public REMeshKnobType Type { get; private set; }
         public string Label { get; private set; }
         public string Describe { get; private set; }
 
@@ -50,7 +50,7 @@ namespace Polyfork
         public string Affects { get; private set; }
 
         /// <summary>
-        /// True when Polyfork rebuilds geometry for this knob.
+        /// True when REMesh rebuilds geometry for this knob.
         ///
         /// The server reads a missing "affects" as "colors" (inc/remix.php,
         /// remix_geo_params), so an unlabelled knob is NOT baked however numeric it looks.
@@ -75,9 +75,9 @@ namespace Polyfork
         // choice only
         public IReadOnlyList<string> Options { get; private set; } = Array.Empty<string>();
 
-        public PolyforkKnobSupport Support { get; internal set; } = PolyforkKnobSupport.Unsupported;
+        public REMeshKnobSupport Support { get; internal set; } = REMeshKnobSupport.Unsupported;
 
-        public bool IsSupported => Support != PolyforkKnobSupport.Unsupported;
+        public bool IsSupported => Support != REMeshKnobSupport.Unsupported;
 
         public float DefaultFloat => DefaultValue?.Type is JTokenType.Integer or JTokenType.Float
             ? DefaultValue.Value<float>()
@@ -128,11 +128,11 @@ namespace Polyfork
             return (float)Math.Round(snapped, 4, MidpointRounding.AwayFromZero);
         }
 
-        internal static PolyforkKnob Parse(string name, JObject o)
+        internal static REMeshKnob Parse(string name, JObject o)
         {
             if (o == null) return null;
 
-            var knob = new PolyforkKnob
+            var knob = new REMeshKnob
             {
                 Name = name,
                 Label = (string)o["label"] ?? name,
@@ -162,13 +162,13 @@ namespace Polyfork
 
         static bool IsWhole(float v) => Mathf.Approximately(v, Mathf.Round(v));
 
-        static PolyforkKnobType ParseType(string raw) => raw switch
+        static REMeshKnobType ParseType(string raw) => raw switch
         {
-            "color" => PolyforkKnobType.Color,
-            "range" => PolyforkKnobType.Range,
-            "choice" => PolyforkKnobType.Choice,
-            "toggle" => PolyforkKnobType.Toggle,
-            _ => PolyforkKnobType.Unknown
+            "color" => REMeshKnobType.Color,
+            "range" => REMeshKnobType.Range,
+            "choice" => REMeshKnobType.Choice,
+            "toggle" => REMeshKnobType.Toggle,
+            _ => REMeshKnobType.Unknown
         };
     }
 
@@ -176,25 +176,25 @@ namespace Polyfork
     /// The full parameter schema for one asset: its knobs plus the curated presets
     /// that back colourway-style choice knobs.
     /// </summary>
-    public sealed class PolyforkParams
+    public sealed class REMeshParams
     {
         public string AssetId { get; private set; }
         public long Rev { get; private set; }
 
-        readonly Dictionary<string, PolyforkKnob> _knobs = new();
+        readonly Dictionary<string, REMeshKnob> _knobs = new();
 
         /// <summary>presetName -> (colorKnobName -> hex).</summary>
         readonly Dictionary<string, Dictionary<string, string>> _presets = new();
 
-        public IReadOnlyDictionary<string, PolyforkKnob> Knobs => _knobs;
+        public IReadOnlyDictionary<string, REMeshKnob> Knobs => _knobs;
 
-        public IEnumerable<PolyforkKnob> All => _knobs.Values;
+        public IEnumerable<REMeshKnob> All => _knobs.Values;
 
         /// <summary>Knobs that can be honoured exactly, in a stable display order.</summary>
-        public IEnumerable<PolyforkKnob> Remixable => _knobs.Values
+        public IEnumerable<REMeshKnob> Remixable => _knobs.Values
             .Where(k => k.IsSupported)
-            .OrderBy(k => k.Support == PolyforkKnobSupport.LocalRecolor ? 0 : 1)
-            .ThenBy(k => k.Type == PolyforkKnobType.Choice ? 0 : 1)
+            .OrderBy(k => k.Support == REMeshKnobSupport.LocalRecolor ? 0 : 1)
+            .ThenBy(k => k.Type == REMeshKnobType.Choice ? 0 : 1)
             .ThenBy(k => k.Name, StringComparer.Ordinal);
 
         public bool TryGetPreset(string presetName, out Dictionary<string, string> slots)
@@ -206,7 +206,7 @@ namespace Polyfork
         /// Parses a -params.json payload and classifies each knob.
         ///
         /// Classification is derived from the payload itself, and matches the verified
-        /// behaviour of https://polyfork.dev/cdn/{id}-remix.glb?p={...}:
+        /// behaviour of https://remesh.dev/cdn/{id}-remix.glb?p={...}:
         ///   * affects: geometry -> the endpoint rebuilds the mesh, whatever the type.
         ///                          range, choice and toggle are all baked.
         ///   * anything else     -> the endpoint drops it (a missing "affects" reads as
@@ -217,12 +217,12 @@ namespace Polyfork
         ///   * colourway choice  -> local: selecting one writes several colour slots at once.
         ///
         /// This is the SERVER path's view. A local baker runs the asset's own module and
-        /// honours everything, which is why IPolyforkBaker.Supports is what UI should ask.
+        /// honours everything, which is why IREMeshBaker.Supports is what UI should ask.
         /// </summary>
-        public static PolyforkParams Parse(string assetId, string json)
+        public static REMeshParams Parse(string assetId, string json)
         {
             var root = JObject.Parse(json);
-            var result = new PolyforkParams { AssetId = assetId };
+            var result = new REMeshParams { AssetId = assetId };
 
             if (root["rev"] != null && root["rev"].Type != JTokenType.Null)
                 result.Rev = root["rev"].Value<long>();
@@ -246,7 +246,7 @@ namespace Polyfork
             {
                 foreach (var prop in ps.Properties())
                 {
-                    var knob = PolyforkKnob.Parse(prop.Name, prop.Value as JObject);
+                    var knob = REMeshKnob.Parse(prop.Name, prop.Value as JObject);
                     if (knob != null) result._knobs[prop.Name] = knob;
                 }
             }
@@ -257,38 +257,38 @@ namespace Polyfork
             return result;
         }
 
-        PolyforkKnobSupport Classify(PolyforkKnob knob)
+        REMeshKnobSupport Classify(REMeshKnob knob)
         {
             // A colourway is decided before anything else: it is a choice knob that resolves
             // to colours, so it is reproducible here and must never cost a bake.
-            if (knob.Type == PolyforkKnobType.Choice && IsColorway(knob))
-                return PolyforkKnobSupport.LocalRecolor;
+            if (knob.Type == REMeshKnobType.Choice && IsColorway(knob))
+                return REMeshKnobSupport.LocalRecolor;
 
             // Geometry is the server's job, and the only thing it will act on.
             if (knob.AffectsGeometry)
             {
                 return knob.Type switch
                 {
-                    PolyforkKnobType.Range => knob.HasRange
-                        ? PolyforkKnobSupport.ServerRebuild
-                        : PolyforkKnobSupport.Unsupported,
+                    REMeshKnobType.Range => knob.HasRange
+                        ? REMeshKnobSupport.ServerRebuild
+                        : REMeshKnobSupport.Unsupported,
 
                     // Sent as the exact option string; the server compares strictly.
-                    PolyforkKnobType.Choice => knob.Options.Count > 0
-                        ? PolyforkKnobSupport.ServerRebuild
-                        : PolyforkKnobSupport.Unsupported,
+                    REMeshKnobType.Choice => knob.Options.Count > 0
+                        ? REMeshKnobSupport.ServerRebuild
+                        : REMeshKnobSupport.Unsupported,
 
-                    PolyforkKnobType.Toggle => PolyforkKnobSupport.ServerRebuild,
+                    REMeshKnobType.Toggle => REMeshKnobSupport.ServerRebuild,
 
-                    _ => PolyforkKnobSupport.Unsupported
+                    _ => REMeshKnobSupport.Unsupported
                 };
             }
 
             // Needs a default hex to identify which vertex-colour slot it owns.
-            if (knob.Type == PolyforkKnobType.Color && IsHex(knob.DefaultString))
-                return PolyforkKnobSupport.LocalRecolor;
+            if (knob.Type == REMeshKnobType.Color && IsHex(knob.DefaultString))
+                return REMeshKnobSupport.LocalRecolor;
 
-            return PolyforkKnobSupport.Unsupported;
+            return REMeshKnobSupport.Unsupported;
         }
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace Polyfork
         /// so there is nothing to publish. Requiring every option to name a preset therefore
         /// hid the colourway control on exactly the assets that only ship alternatives.
         /// </summary>
-        bool IsColorway(PolyforkKnob knob)
+        bool IsColorway(REMeshKnob knob)
         {
             if (knob.Options.Count == 0 || _presets.Count == 0) return false;
 
@@ -308,7 +308,7 @@ namespace Polyfork
         }
 
         /// <summary>The authored colours a colourway option restores, or null if it names a preset.</summary>
-        public bool IsDefaultColorway(PolyforkKnob knob, string option)
+        public bool IsDefaultColorway(REMeshKnob knob, string option)
             => knob != null && option != null && option == knob.DefaultString && !_presets.ContainsKey(option);
 
         /// <summary>Accepts both #RRGGBB and the #RGB shorthand the catalogue uses.</summary>
@@ -316,7 +316,7 @@ namespace Polyfork
             !string.IsNullOrEmpty(s) && s[0] == '#' && (s.Length == 7 || s.Length == 4);
 
         /// <summary>
-        /// The default colour of every recolourable slot, as authored by Polyfork.
+        /// The default colour of every recolourable slot, as authored by REMesh.
         /// These hexes are exactly the distinct COLOR_0 values in the asset's GLB,
         /// which is what makes slot identification exact rather than approximate.
         /// </summary>
@@ -325,7 +325,7 @@ namespace Polyfork
             var map = new Dictionary<string, Color>();
             foreach (var knob in _knobs.Values)
             {
-                if (knob.Type != PolyforkKnobType.Color) continue;
+                if (knob.Type != REMeshKnobType.Color) continue;
                 if (TryParseHex(knob.DefaultString, out var c)) map[knob.Name] = c;
             }
             return map;

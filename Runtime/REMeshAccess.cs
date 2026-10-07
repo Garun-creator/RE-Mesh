@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// What this connection is allowed to do, from GET /api/me.
@@ -13,7 +13,7 @@ namespace Polyfork
     /// served from cache and never counted. Converging on the same knob values therefore
     /// costs nothing, which is why the remix sliders snap to a fixed set of stops.
     /// </summary>
-    public sealed class PolyforkAccess
+    public sealed class REMeshAccess
     {
         public bool Authenticated;
 
@@ -60,12 +60,12 @@ namespace Polyfork
             return $"{Plan}: {BakesLeftThisHour ?? 0} bakes left this hour{period}";
         }
 
-        public static PolyforkAccess Parse(string json)
+        public static REMeshAccess Parse(string json)
         {
             var root = JObject.Parse(json);
             var a = root["access"] as JObject ?? root;
 
-            var access = new PolyforkAccess
+            var access = new REMeshAccess
             {
                 Authenticated = root["authenticated"]?.Type == JTokenType.Boolean &&
                                 root["authenticated"].Value<bool>(),

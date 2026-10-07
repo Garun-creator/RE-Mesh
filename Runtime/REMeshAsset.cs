@@ -4,10 +4,10 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
-    /// <summary>One record from https://polyfork.dev/api/assets.</summary>
-    public sealed class PolyforkAsset
+    /// <summary>One record from https://remesh.dev/api/assets.</summary>
+    public sealed class REMeshAsset
     {
         public string Id;
         public string Title;
@@ -54,7 +54,7 @@ namespace Polyfork
         /// program, so without it the only option is asking the server to rebuild a mesh.
         /// Free assets publish it to everyone; paid assets need a key.
         /// </summary>
-        public PolyforkDownload Download;
+        public REMeshDownload Download;
 
         /// <summary>True when the asset's createAsset() module is fetchable by this caller.</summary>
         public bool HasModule => !string.IsNullOrEmpty(Download?.Mjs);
@@ -65,7 +65,7 @@ namespace Polyfork
         /// This is a summary of what the model actually looks like, not the kit's full
         /// palette: a handful of weighted swatches rather than every colour in the range.
         /// </summary>
-        public PolyforkSwatch[] Palette = Array.Empty<PolyforkSwatch>();
+        public REMeshSwatch[] Palette = Array.Empty<REMeshSwatch>();
 
         public override string ToString() => $"{Title} [{Id}] {Triangles}tri kit={Kit}";
 
@@ -73,13 +73,13 @@ namespace Polyfork
         /// Parses one asset record from raw catalogue JSON. Public so callers (and tests)
         /// can work with a stored payload without taking a dependency on the JSON library.
         /// </summary>
-        public static PolyforkAsset FromJson(string json) =>
+        public static REMeshAsset FromJson(string json) =>
             string.IsNullOrWhiteSpace(json) ? null : Parse(JObject.Parse(json));
 
-        internal static PolyforkAsset Parse(JObject o)
+        internal static REMeshAsset Parse(JObject o)
         {
             if (o == null) return null;
-            var a = new PolyforkAsset
+            var a = new REMeshAsset
             {
                 Id = (string)o["id"],
                 Title = (string)o["title"],
@@ -99,10 +99,10 @@ namespace Polyfork
             };
 
             a.SizeMeters = ParseSize(o["size_m"]);
-            a.Download = PolyforkDownload.Parse(o["download"]);
+            a.Download = REMeshDownload.Parse(o["download"]);
 
             if (o["palette"] is JArray pal)
-                a.Palette = pal.Select(PolyforkSwatch.Parse).Where(s => s != null).ToArray();
+                a.Palette = pal.Select(REMeshSwatch.Parse).Where(s => s != null).ToArray();
 
             return a;
         }
@@ -136,7 +136,7 @@ namespace Polyfork
     /// <summary>
     /// Direct file URLs for an asset, present only when this connection is allowed them.
     /// </summary>
-    public sealed class PolyforkDownload
+    public sealed class REMeshDownload
     {
         public string Glb;
 
@@ -146,11 +146,11 @@ namespace Polyfork
         /// <summary>"none" when no key is needed; otherwise what the caller must present.</summary>
         public string Auth;
 
-        internal static PolyforkDownload Parse(JToken token)
+        internal static REMeshDownload Parse(JToken token)
         {
             if (token is not JObject o) return null;
 
-            var d = new PolyforkDownload
+            var d = new REMeshDownload
             {
                 Glb = (string)o["glb"],
                 Mjs = (string)o["mjs"],
@@ -161,7 +161,7 @@ namespace Polyfork
     }
 
     /// <summary>One entry of an asset's dominant-colour summary.</summary>
-    public sealed class PolyforkSwatch
+    public sealed class REMeshSwatch
     {
         public string Hex;
 
@@ -174,18 +174,18 @@ namespace Polyfork
         /// Reads either the current object form ({"hex":"#479","share":0.75}) or the older
         /// plain-string form, so a client works against both shapes of the catalogue.
         /// </summary>
-        internal static PolyforkSwatch Parse(JToken token)
+        internal static REMeshSwatch Parse(JToken token)
         {
             switch (token?.Type)
             {
                 case JTokenType.String:
-                    return new PolyforkSwatch { Hex = token.Value<string>(), Share = 0f };
+                    return new REMeshSwatch { Hex = token.Value<string>(), Share = 0f };
 
                 case JTokenType.Object:
                     var hex = (string)token["hex"];
                     if (string.IsNullOrEmpty(hex)) return null;
                     var share = token["share"];
-                    return new PolyforkSwatch
+                    return new REMeshSwatch
                     {
                         Hex = hex,
                         Share = share?.Type is JTokenType.Float or JTokenType.Integer
@@ -199,16 +199,16 @@ namespace Polyfork
         }
     }
 
-    /// <summary>One record from https://polyfork.dev/api/kits.</summary>
-    public sealed class PolyforkKit
+    /// <summary>One record from https://remesh.dev/api/kits.</summary>
+    public sealed class REMeshKit
     {
         public string Id;
         public string Title;
         public int Count;
 
-        internal static PolyforkKit Parse(JObject o) => o == null
+        internal static REMeshKit Parse(JObject o) => o == null
             ? null
-            : new PolyforkKit
+            : new REMeshKit
             {
                 Id = (string)o["id"] ?? (string)o["slug"],
                 Title = (string)o["title"] ?? (string)o["name"],
@@ -216,12 +216,12 @@ namespace Polyfork
             };
     }
 
-    public sealed class PolyforkPage
+    public sealed class REMeshPage
     {
         public int Total;
         public int Page;
         public int PerPage;
-        public List<PolyforkAsset> Assets = new();
+        public List<REMeshAsset> Assets = new();
 
         public bool HasMore => Page * PerPage < Total;
     }

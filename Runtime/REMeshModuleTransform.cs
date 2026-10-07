@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
-    /// Rewrites a Polyfork asset module from ES module syntax into a plain script.
+    /// Rewrites a REMesh asset module from ES module syntax into a plain script.
     ///
     /// Asset modules are ESM, but running them through a JS engine's module system would
     /// mean a resolver per asset for no benefit: there is exactly one dependency and it is
@@ -15,7 +15,7 @@ namespace Polyfork
     /// Deliberately narrow rather than a general transpiler. It handles the forms the
     /// catalogue actually publishes, and says so loudly when it meets anything else.
     /// </summary>
-    public static class PolyforkModuleTransform
+    public static class REMeshModuleTransform
     {
         /// <summary>
         /// Produces script that builds an `__exports` object. Imports are dropped, since the
@@ -44,7 +44,7 @@ namespace Polyfork
                     // three is provided by the host. Anything else would be a dependency the
                     // catalogue does not use, so leave a marker rather than failing silently.
                     if (!trimmed.Contains("three"))
-                        sb.AppendLine("/* polyfork: dropped unsupported import */");
+                        sb.AppendLine("/* remesh: dropped unsupported import */");
                     continue;
                 }
 

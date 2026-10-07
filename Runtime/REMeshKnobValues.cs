@@ -5,7 +5,7 @@ using System.Globalization;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// A complete set of knob values for one asset, of any knob type.
@@ -15,7 +15,7 @@ namespace Polyfork
     /// split is a property of one baker, not of the asset: a baker that runs the asset's
     /// own module honours every knob from a single set. This is that single set.
     /// </summary>
-    public sealed class PolyforkKnobValues : IEnumerable<KeyValuePair<string, object>>
+    public sealed class REMeshKnobValues : IEnumerable<KeyValuePair<string, object>>
     {
         readonly Dictionary<string, object> _values = new();
 
@@ -54,12 +54,12 @@ namespace Polyfork
             color = default;
             return _values.TryGetValue(knob, out var v)
                    && v is string s
-                   && PolyforkParams.TryParseHex(s, out color);
+                   && REMeshParams.TryParseHex(s, out color);
         }
 
-        public PolyforkKnobValues Clone()
+        public REMeshKnobValues Clone()
         {
-            var copy = new PolyforkKnobValues();
+            var copy = new REMeshKnobValues();
             foreach (var kv in _values) copy._values[kv.Key] = kv.Value;
             return copy;
         }
@@ -67,23 +67,23 @@ namespace Polyfork
         /// <summary>
         /// Every knob at the value the schema publishes as its default.
         /// </summary>
-        public static PolyforkKnobValues Defaults(PolyforkParams schema)
+        public static REMeshKnobValues Defaults(REMeshParams schema)
         {
-            var values = new PolyforkKnobValues();
+            var values = new REMeshKnobValues();
             if (schema == null) return values;
 
             foreach (var knob in schema.All)
             {
                 switch (knob.Type)
                 {
-                    case PolyforkKnobType.Range:
+                    case REMeshKnobType.Range:
                         values.SetNumber(knob.Name, knob.DefaultFloat);
                         break;
-                    case PolyforkKnobType.Toggle:
+                    case REMeshKnobType.Toggle:
                         values.SetBool(knob.Name, knob.DefaultBool);
                         break;
-                    case PolyforkKnobType.Choice:
-                    case PolyforkKnobType.Color:
+                    case REMeshKnobType.Choice:
+                    case REMeshKnobType.Color:
                         if (knob.DefaultString != null) values._values[knob.Name] = knob.DefaultString;
                         break;
                 }
@@ -95,9 +95,9 @@ namespace Polyfork
         /// Drops anything still at its published default, so a request carries only what
         /// the user actually changed. Smaller payloads are also better cache keys.
         /// </summary>
-        public PolyforkKnobValues WithoutDefaults(PolyforkParams schema)
+        public REMeshKnobValues WithoutDefaults(REMeshParams schema)
         {
-            var trimmed = new PolyforkKnobValues();
+            var trimmed = new REMeshKnobValues();
             if (schema == null) return trimmed;
 
             foreach (var kv in _values)
@@ -121,15 +121,15 @@ namespace Polyfork
         /// Only the knobs a given baker can actually honour. Sending a value a baker
         /// ignores just changes the cache key without changing the result.
         /// </summary>
-        public PolyforkKnobValues Filter(PolyforkParams schema, IPolyforkBaker baker)
+        public REMeshKnobValues Filter(REMeshParams schema, IREMeshBaker baker)
         {
-            var filtered = new PolyforkKnobValues();
+            var filtered = new REMeshKnobValues();
             if (schema == null || baker == null) return filtered;
 
             foreach (var kv in _values)
             {
                 if (schema.Knobs.TryGetValue(kv.Key, out var knob) &&
-                    baker.Supports(knob) == PolyforkKnobSupport.ServerRebuild)
+                    baker.Supports(knob) == REMeshKnobSupport.ServerRebuild)
                 {
                     filtered._values[kv.Key] = kv.Value;
                 }
@@ -145,9 +145,9 @@ namespace Polyfork
         /// the JSON itself rather than from a schema, so a choice stays the string it was
         /// published as, which is the distinction the remix endpoint compares on.
         /// </summary>
-        public static PolyforkKnobValues FromJson(string json)
+        public static REMeshKnobValues FromJson(string json)
         {
-            var values = new PolyforkKnobValues();
+            var values = new REMeshKnobValues();
             if (string.IsNullOrWhiteSpace(json)) return values;
 
             JObject root;

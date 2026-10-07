@@ -1,21 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
-    /// Maps every vertex of a loaded Polyfork GLB onto one of the asset's named colour
+    /// Maps every vertex of a loaded REMesh GLB onto one of the asset's named colour
     /// slots, so colour and colourway knobs can be applied instantly with no network call.
     ///
-    /// This is exact rather than approximate. A Polyfork asset is a single mesh with a
+    /// This is exact rather than approximate. A REMesh asset is a single mesh with a
     /// single material and baked COLOR_0 vertex colours, and the set of distinct vertex
     /// colours is precisely the set of default hexes declared by the asset's colour knobs.
     /// (Verified: plastic-drum-da992f has exactly three distinct vertex colours -
     /// #8FB4C9 x1386, #1B1D20 x336, #4E5459 x126 - matching body / bung / lid.)
     /// So a vertex whose colour equals knob X's default hex is, by construction, part of
-    /// slot X, and recolouring it is what Polyfork's own viewer does.
+    /// slot X, and recolouring it is what REMesh's own viewer does.
     /// </summary>
-    public sealed class PolyforkColorSlots
+    public sealed class REMeshColorSlots
     {
         const float MatchEpsilon = 0.02f;
 
@@ -40,9 +40,9 @@ namespace Polyfork
         /// <summary>
         /// Binds a freshly loaded GLB hierarchy to the asset's declared colour slots.
         /// </summary>
-        public static PolyforkColorSlots Build(GameObject root, PolyforkParams schema)
+        public static REMeshColorSlots Build(GameObject root, REMeshParams schema)
         {
-            var slots = new PolyforkColorSlots();
+            var slots = new REMeshColorSlots();
             if (root == null || schema == null) return slots;
 
             var defaults = schema.DefaultSlotColors();
