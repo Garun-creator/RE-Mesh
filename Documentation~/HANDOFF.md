@@ -1,10 +1,9 @@
-# Handoff — RE:Mesh for Unity
+# Handoff — MESHRA for Unity
 
-Written 2026-08-04, continuing work on the RE:Mesh project.
-Updated 2026-10-08: rebranded from Polyfork to RE:Mesh and migrated to the RE:Mesh GitHub repo.
+Written 2026-08-04, continuing work on the project.
+Updated 2026-10-08: Rebranded to MESHRA (Team CODE SYNERGY for Innohacks 4.0), tailored for the Indian Gaming & AVGC ecosystem.
 
-The deliverable is a Unity package, `dev.remesh.unity-connector`, that puts a 3D asset
-catalogue inside the Unity editor.
+The deliverable is a Unity package, `dev.meshra.unity-connector`, that puts an in-editor real-time 3D asset studio & automated rigging engine inside Unity (`Ctrl/Cmd + Shift + P`).
 
 ---
 
@@ -12,16 +11,15 @@ catalogue inside the Unity editor.
 
 | | |
 | --- | --- |
-| Repo | `github.com/Garun-creator/RE-Mesh` — **public** |
+| Repo | `github.com/SKYGOD07/MESHRA` — **public** |
 | The package | The repo root. This repo is the package, nothing else |
 | This document | `Documentation~/HANDOFF.md`. The `~` keeps Unity from importing it |
-| Install URL | `https://github.com/Garun-creator/RE-Mesh.git` |
+| Install URL | `https://github.com/SKYGOD07/MESHRA.git` |
 
 ## 2. What it does
 
-An editor window (`Window ▸ RE:Mesh ▸ Browse Assets`) that browses the catalogue, exposes
-each asset's knobs as real controls, previews the result, and imports it as a `.glb` with
-colours baked in. Plus a runtime API for streaming and remixing at play time.
+An in-editor asset gallery window (`Tools ▸ MESHRA ▸ Browse Assets`, `Ctrl/Cmd + Shift + P`) that browses the catalogue, exposes each asset's knobs with zero-latency hybrid baking (~0.05ms vertex morphing, ~20-140ms QuickJS local baking), previews the result, and imports it with `COLOR_0` vertex colors baked in. Plus `MeshRACharacterAnimation` bone-binding for automated character rigging without joint hierarchy distortion.
+
 
 **The design rule that matters:** nothing is invented client-side. Every label, range,
 step, option and palette entry is read from the asset's published schema at

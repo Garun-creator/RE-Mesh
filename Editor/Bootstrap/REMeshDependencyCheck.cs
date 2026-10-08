@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Says which package is missing, when one is.
@@ -14,7 +14,7 @@ namespace Polyfork.EditorTools
     ///
     /// It fires for the `.unitypackage`. That format carries no dependency information at all - it
     /// is a bag of files, not a manifest - so nothing resolves them, and the first thing the user
-    /// sees is every Polyfork assembly failing to compile against references it cannot find. That
+    /// sees is every REMesh assembly failing to compile against references it cannot find. That
     /// reads as "this package is broken" rather than "install two packages first".
     ///
     /// Which is why this assembly references NOTHING. It is the one part of the connector that
@@ -24,7 +24,7 @@ namespace Polyfork.EditorTools
     /// It reports and stops there. Installing the packages itself would be the store's 2.5.1.e,
     /// which has no exception for a user who agreed - see `Tools~/make-store-package.py`.
     /// </summary>
-    static class PolyforkDependencyCheck
+    static class REMeshDependencyCheck
     {
         static readonly (string Package, string Why)[] Required =
         {
@@ -63,14 +63,14 @@ namespace Polyfork.EditorTools
             var list = string.Join("\n", missing.Select(m => $"    {m.Package}   ({m.Why})"));
 
             Debug.LogError(
-                "[Polyfork] Missing required packages, so the connector cannot compile:\n\n"
+                "[REMesh] Missing required packages, so the connector cannot compile:\n\n"
                 + list
                 + "\n\nInstall each with Window > Package Manager > + > Install package by name. "
                 + "They come from Unity's own registry and are free.\n\n"
                 + "A .unitypackage carries no dependency information, which is the usual reason "
                 + "for this. Package Manager installs - the Asset Store or the git URL - read "
                 + "them from the manifest and resolve both on their own:\n"
-                + "    https://github.com/lucas-martinic/polyfork-unity-connector.git");
+                + "    https://github.com/lucas-martinic/remesh-unity-connector.git");
         }
     }
 }

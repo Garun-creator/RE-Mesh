@@ -1,6 +1,6 @@
 {
-    "name": "Polyfork.Connector.Bootstrap",
-    "rootNamespace": "Polyfork.EditorTools",
+    "name": "REMesh.Connector.Bootstrap",
+    "rootNamespace": "REMesh.EditorTools",
     "references": [],
     "includePlatforms": [
         "Editor"

@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using Polyfork.EditorTools;
+using REMesh.EditorTools;
 using Puerts;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Supplies Puerts with its own JavaScript bootstrap, out of the package rather than out
@@ -23,7 +23,7 @@ namespace Polyfork
     /// as null. Requests still arrive under the original name, so <see cref="IsESM"/> sees the
     /// extension Puerts expects.
     /// </summary>
-    sealed class PolyforkPuertsLoader : ILoader, IModuleChecker
+    sealed class REMeshPuertsLoader : ILoader, IModuleChecker
     {
         const string Root = "Editor/Puerts/Vendor/JS";
 
@@ -35,7 +35,7 @@ namespace Polyfork
 
         public string ReadFile(string filepath, out string debugpath)
         {
-            debugpath = $"{PolyforkPackagePath.Root}/{Root}/{filepath}";
+            debugpath = $"{REMeshPackagePath.Root}/{Root}/{filepath}";
             return Read(filepath);
         }
 
@@ -47,7 +47,7 @@ namespace Polyfork
         {
             if (_cache.TryGetValue(filepath, out var cached)) return cached;
 
-            var root = PolyforkPackagePath.Root;
+            var root = REMeshPackagePath.Root;
             var text = root == null
                 ? null
                 : AssetDatabase.LoadAssetAtPath<TextAsset>($"{root}/{Root}/{filepath}.txt")?.text;
@@ -65,15 +65,15 @@ namespace Polyfork
         /// </summary>
         public bool Verify(out string problem)
         {
-            if (PolyforkPackagePath.Root == null)
+            if (REMeshPackagePath.Root == null)
             {
-                problem = "the Polyfork package folder could not be located";
+                problem = "the REMesh package folder could not be located";
                 return false;
             }
 
             if (Read("puerts/init.mjs") == null)
             {
-                problem = $"the JavaScript bootstrap is missing from {PolyforkPackagePath.Root}/{Root}";
+                problem = $"the JavaScript bootstrap is missing from {REMeshPackagePath.Root}/{Root}";
                 return false;
             }
 

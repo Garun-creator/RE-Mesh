@@ -1,8 +1,8 @@
 {
-    "name": "Polyfork.Connector.Editor",
-    "rootNamespace": "Polyfork.EditorTools",
+    "name": "REMesh.Connector.Editor",
+    "rootNamespace": "REMesh.EditorTools",
     "references": [
-        "Polyfork.Connector",
+        "REMesh.Connector",
         "glTFast",
         "glTFast.Editor",
         "glTFast.Export",

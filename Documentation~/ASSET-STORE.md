@@ -101,55 +101,35 @@ these notices must also strip the vendored engine itself — they travel togethe
 **Title** (keep under 50 characters)
 
 ```
-RE:Mesh — 3D Asset Browser & Remixer
+MESHRA — In-Editor 3D Asset Studio & Auto-Rigging
 ```
 
 **Summary / short description**
 
 ```
-Browse hundreds of low-poly 3D assets inside Unity, turn each model's parameters, and
-import it with your colours baked in. One draw call per model.
+In-Editor Real-Time 3D Asset Studio & Automated Rigging Engine for Unity, built for the Indian Gaming & AVGC ecosystem. Zero-latency hybrid baking & auto-rigging.
 ```
 
 **Description**
 
 ```
-RE:Mesh puts a 3D asset catalogue inside the Unity editor — and the models are programs
-rather than frozen meshes.
+MESHRA (by Team CODE SYNERGY) brings an in-editor real-time 3D asset studio and automated rigging engine directly into Unity, engineered to solve high 3D licensing costs, hardware barriers, and tier-2/3 network constraints across the Indian Gaming & AVGC ecosystem.
 
-Open Tools > RE:Mesh > Browse Assets to search the catalogue, preview any model in an
-orbitable 3D view, then open it to remix: drag a slider and the geometry rebuilds, pick a
-colourway and every part recolours at once. Import writes a .glb into your project and drops
-it into the scene, with a component that keeps the knobs editable afterwards — change your
-mind a month later without hunting for the asset again.
+Open Tools > MESHRA > Browse Assets (Ctrl/Cmd + Shift + P) to search the catalogue, parametrically tweak 3D models with zero-latency hybrid baking (~0.05ms vertex morphing, ~20-140ms QuickJS local baking), and instantiate Unity prefabs directly into your scene.
 
 WHAT YOU GET
-• An editor window over the whole catalogue, searchable and filterable
-• Live parameter editing: sliders, options, toggles and per-part colours
-• Import as .glb at real-world scale, origin on the ground
-• A component that keeps a placed model editable in the Inspector
-• A runtime API for spawning and remixing at play time
-• Rigged characters import with an Animator and a clip dropdown
-
-BUILT FOR REAL-TIME
-Every model is flat-shaded vertex colour on a single material with no textures, so it draws
-in one call — and because they share that material, a set of them merges into one draw call
-for the lot. Kilobytes per model, not megabytes.
-
-FREE TIER
-About half the catalogue is free forever: no account needed to browse, preview or import, no
-attribution, commercial use allowed. An API key raises the remix allowance and unlocks the
-paid catalogue.
+• Native Unity Editor Asset Gallery (Ctrl/Cmd + Shift + P)
+• Zero-Latency Hybrid Baking Engine (~0.05ms vertex morphing & QuickJS local execution)
+• MeshRACharacterAnimation bone-binding pipeline for automated character rigging without joint distortion
+• glTFast COLOR_0 vertex color pipeline for single-draw-call rendering
+• Runtime API for spawning & parametric tweaking at play time
 
 REQUIREMENTS
-Unity 6000.0 or newer. Depends on glTFast (com.unity.cloud.gltfast) and Newtonsoft JSON
-(com.unity.nuget.newtonsoft-json), both from Unity's own registry. Works with the built-in
-render pipeline and URP.
+Unity 6000.0 or newer. Depends on glTFast (com.unity.cloud.gltfast) and Newtonsoft JSON (com.unity.nuget.newtonsoft-json).
 
-Remixing and importing use the web API, so an internet connection is required.
-
-Source code is available on GitHub: https://github.com/Garun-creator/RE-Mesh
+Source code & Innohacks 4.0 Pitch Deck available on GitHub: https://github.com/SKYGOD07/MESHRA
 ```
+
 
 **Category**: `Tools ▸ Modeling` (alternative: `Tools ▸ Utilities`)
 

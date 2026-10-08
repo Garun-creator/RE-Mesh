@@ -10,20 +10,20 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
-    /// Saves a remixed Polyfork asset into the project as a .glb.
+    /// Saves a remixed REMesh asset into the project as a .glb.
     ///
-    /// The geometry comes from Polyfork's remix endpoint, but colour knobs are not baked
+    /// The geometry comes from REMesh's remix endpoint, but colour knobs are not baked
     /// server-side, so a straight download would land in the project with default colours -
     /// not what the user just dialled in. Instead the GLB is loaded, recoloured through
-    /// <see cref="PolyforkColorSlots"/>, and re-exported. The result is a real .glb with the
+    /// <see cref="REMeshColorSlots"/>, and re-exported. The result is a real .glb with the
     /// chosen colours baked into COLOR_0, usable outside Unity too.
     /// </summary>
-    public static class PolyforkAssetImporter
+    public static class REMeshAssetImporter
     {
-        public const string DefaultFolder = "Assets/Polyfork";
+        public const string DefaultFolder = "Assets/REMesh";
 
         public sealed class Result
         {
@@ -45,14 +45,14 @@ namespace Polyfork.EditorTools
         /// Downloads the asset at its current knob values and writes it into the project.
         /// </summary>
         public static async Task<Result> ImportAsync(
-            PolyforkClient client,
-            PolyforkGlbLoader loader,
-            PolyforkAsset asset,
-            PolyforkParams schema,
-            PolyforkKnobValues geometry,
+            REMeshClient client,
+            REMeshGlbLoader loader,
+            REMeshAsset asset,
+            REMeshParams schema,
+            REMeshKnobValues geometry,
             IReadOnlyDictionary<string, Color> slotColors,
             string folder = DefaultFolder,
-            IPolyforkBaker baker = null,
+            IREMeshBaker baker = null,
             CancellationToken ct = default)
         {
             var result = new Result();
@@ -75,7 +75,7 @@ namespace Polyfork.EditorTools
                     ? asset.Download?.Glb
                     : null;
 
-                /* If something here can build the asset without asking polyfork.dev, use it.
+                /* If something here can build the asset without asking remesh.dev, use it.
                  *
                  * Importing a remixed FREE asset used to demand a server bake and could be
                  * refused for want of allowance - on an asset the editor was, at that moment,
@@ -116,7 +116,7 @@ namespace Polyfork.EditorTools
                 {
                     staging = await loader.InstantiateAsync(bytes, url, null, ct);
                     staging.hideFlags = HideFlags.HideAndDontSave;   // see the note in ImportFromBakerAsync
-                    var slots = PolyforkColorSlots.Build(staging, schema);
+                    var slots = REMeshColorSlots.Build(staging, schema);
 
                     if (!slots.HasSlots)
                     {
@@ -135,7 +135,7 @@ namespace Polyfork.EditorTools
                         if (clips > 0)
                         {
                             Debug.LogWarning(
-                                $"[Polyfork] {asset.Id} has {clips} animation clip(s), and recolouring " +
+                                $"[REMesh] {asset.Id} has {clips} animation clip(s), and recolouring " +
                                 "re-exports the mesh, which does not carry them. Import it at its " +
                                 "published colours to keep the animation.");
                         }
@@ -174,7 +174,7 @@ namespace Polyfork.EditorTools
                 result.Error = "Cancelled.";
                 return result;
             }
-            catch (PolyforkRateLimitException e)
+            catch (REMeshRateLimitException e)
             {
                 result.RateLimited = true;
                 result.RetryAfter = e.RetryAfter;
@@ -194,7 +194,7 @@ namespace Polyfork.EditorTools
 
 
         /// <summary>
-        /// Saves a prefab beside the .glb carrying a PolyforkAssetLink, and returns its path.
+        /// Saves a prefab beside the .glb carrying a REMeshAssetLink, and returns its path.
         ///
         /// A .glb lands in the project as an imported model, and an imported model is not
         /// something a component can be added to - Unity rebuilds it from the file on every
@@ -205,7 +205,7 @@ namespace Polyfork.EditorTools
         /// Best effort: a failure here costs the Inspector knobs, not the import.
         /// </summary>
         static async Task<string> SavePrefab(
-            string glbPath, PolyforkAsset asset, PolyforkKnobValues values)
+            string glbPath, REMeshAsset asset, REMeshKnobValues values)
         {
             GameObject instance = null;
             try
@@ -216,7 +216,7 @@ namespace Polyfork.EditorTools
                 // Fetch the clip pack BEFORE anything is in the scene, so a slow download
                 // does not happen with a staging object sitting in front of the user.
                 if (model.GetComponentInChildren<SkinnedMeshRenderer>(true) != null)
-                    await PolyforkAnimationPack.PrewarmAsync();
+                    await REMeshAnimationPack.PrewarmAsync();
 
                 instance = UnityEngine.Object.Instantiate(model);
                 instance.name = model.name;
@@ -229,7 +229,7 @@ namespace Polyfork.EditorTools
                 instance.SetActive(false);
                 instance.hideFlags = HideFlags.HideInHierarchy;
 
-                var link = instance.AddComponent<PolyforkAssetLink>();
+                var link = instance.AddComponent<REMeshAssetLink>();
                 link.assetId = asset.Id;
                 link.title = asset.Title;
                 link.page = asset.Page;
@@ -240,7 +240,7 @@ namespace Polyfork.EditorTools
                  * Standing perfectly still is what a character with no clips does, and it
                  * reads as broken rather than as "no animation was shipped". The clips are
                  * bound to THIS skeleton here, while the hierarchy is in hand. */
-                await PolyforkAnimationPack.SetUpAsync(
+                await REMeshAnimationPack.SetUpAsync(
                     instance, asset.Id, Path.GetDirectoryName(glbPath)?.Replace('\\', '/') ?? DefaultFolder);
 
                 instance.SetActive(true);
@@ -254,7 +254,7 @@ namespace Polyfork.EditorTools
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] could not write a prefab for {asset.Id} ({e.Message}); " +
+                Debug.LogWarning($"[REMesh] could not write a prefab for {asset.Id} ({e.Message}); " +
                                  "the .glb imported fine, it just has no knobs in the Inspector.");
                 return null;
             }
@@ -271,17 +271,17 @@ namespace Polyfork.EditorTools
         /// finished thing - no download to fetch and no slots to repaint afterwards.
         /// </summary>
         static async Task<Result> ImportFromBakerAsync(
-            IPolyforkBaker baker,
-            PolyforkAsset asset,
-            PolyforkParams schema,
-            PolyforkKnobValues values,
+            IREMeshBaker baker,
+            REMeshAsset asset,
+            REMeshParams schema,
+            REMeshKnobValues values,
             string folder,
             CancellationToken ct)
         {
             GameObject staging = null;
             try
             {
-                staging = await baker.BakeAsync(new PolyforkBakeRequest(asset, schema, values), ct);
+                staging = await baker.BakeAsync(new REMeshBakeRequest(asset, schema, values), ct);
                 if (staging == null) return null;
 
                 /* Hidden immediately. A bake builds a real GameObject in the open scene, and
@@ -299,7 +299,7 @@ namespace Polyfork.EditorTools
                  *
                  * glTFast drops vertex attributes it judges unused, and it judges by the
                  * material: "vertex colors are discarded when the assigned material(s) do not
-                 * use them". A Polyfork asset keeps its ENTIRE appearance in COLOR_0, and the
+                 * use them". A REMesh asset keeps its ENTIRE appearance in COLOR_0, and the
                  * material carrying it is our own shader, which glTFast has never heard of -
                  * so the exporter helpfully threw away the only thing that made the model
                  * look like anything, and the import arrived white. */
@@ -329,7 +329,7 @@ namespace Polyfork.EditorTools
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] local import of {asset.Id} failed ({e.Message}); using the server.");
+                Debug.LogWarning($"[REMesh] local import of {asset.Id} failed ({e.Message}); using the server.");
                 return null;
             }
             finally
@@ -380,15 +380,15 @@ namespace Polyfork.EditorTools
         /// true for any other caller, and a default that slips through is not harmless - it
         /// turns the free baseline preview into a metered variant identical to it.
         /// </summary>
-        static PolyforkKnobValues StripDefaults(PolyforkParams schema, PolyforkKnobValues values)
+        static REMeshKnobValues StripDefaults(REMeshParams schema, REMeshKnobValues values)
         {
-            var payload = new PolyforkKnobValues();
+            var payload = new REMeshKnobValues();
             if (values == null || schema == null) return payload;
 
             foreach (var name in values.Names)
             {
                 if (!schema.Knobs.TryGetValue(name, out var knob)) continue;
-                if (knob.Support != PolyforkKnobSupport.ServerRebuild) continue;
+                if (knob.Support != REMeshKnobSupport.ServerRebuild) continue;
                 if (!values.TryGet(name, out var raw)) continue;
 
                 switch (raw)
@@ -407,15 +407,15 @@ namespace Polyfork.EditorTools
             return payload;
         }
 
-        static bool NeedsRecolour(PolyforkParams schema, IReadOnlyDictionary<string, Color> slotColors)
+        static bool NeedsRecolour(REMeshParams schema, IReadOnlyDictionary<string, Color> slotColors)
         {
             if (schema == null || slotColors == null || slotColors.Count == 0) return false;
 
             foreach (var kv in slotColors)
             {
                 if (!schema.Knobs.TryGetValue(kv.Key, out var knob)) continue;
-                if (knob.Type != PolyforkKnobType.Color) continue;
-                if (!PolyforkParams.TryParseHex(knob.DefaultString, out var authored)) continue;
+                if (knob.Type != REMeshKnobType.Color) continue;
+                if (!REMeshParams.TryParseHex(knob.DefaultString, out var authored)) continue;
 
                 if (!Approximately(authored, kv.Value)) return true;
             }
@@ -430,10 +430,10 @@ namespace Polyfork.EditorTools
         /// one asset can live side by side and stay recognisable.
         /// </summary>
         static string BuildFileName(
-            PolyforkAsset asset,
-            PolyforkKnobValues payload,
+            REMeshAsset asset,
+            REMeshKnobValues payload,
             IReadOnlyDictionary<string, Color> slotColors,
-            PolyforkParams schema)
+            REMeshParams schema)
         {
             var sb = new StringBuilder(Sanitise(asset.Title ?? asset.Id));
 

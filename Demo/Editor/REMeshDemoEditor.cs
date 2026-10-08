@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.Demo.EditorTools
+namespace REMesh.Demo.EditorTools
 {
     /// <summary>
     /// Draws the demo object's steps as instructions rather than as four text fields.
@@ -10,14 +10,14 @@ namespace Polyfork.Demo.EditorTools
     /// scene in a text editor can read them - but nobody wants to edit them, and a stack of
     /// editable TextAreas reads like a form to fill in rather than something to follow.
     /// </summary>
-    [CustomEditor(typeof(PolyforkDemo))]
-    public sealed class PolyforkDemoEditor : Editor
+    [CustomEditor(typeof(REMeshDemo))]
+    public sealed class REMeshDemoEditor : Editor
     {
         public override void OnInspectorGUI()
         {
-            var demo = (PolyforkDemo)target;
+            var demo = (REMeshDemo)target;
 
-            EditorGUILayout.LabelField("Polyfork — getting started", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("MESHRA — getting started (CODE SYNERGY)", EditorStyles.boldLabel);
             EditorGUILayout.Space(4f);
 
             var i = 1;
@@ -33,8 +33,8 @@ namespace Polyfork.Demo.EditorTools
 
             EditorGUILayout.Space(8f);
 
-            if (GUILayout.Button("Open the Polyfork gallery", GUILayout.Height(30f)))
-                EditorApplication.ExecuteMenuItem("Tools/Polyfork/Browse Assets");
+            if (GUILayout.Button("Open the MESHRA Studio gallery", GUILayout.Height(30f)))
+                EditorApplication.ExecuteMenuItem("Tools/MESHRA/Browse Assets");
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.HelpBox(demo.note, MessageType.None);
