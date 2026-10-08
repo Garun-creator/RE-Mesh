@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
-    /// Rebinds an animation clip onto a Polyfork character's own skeleton.
+    /// Rebinds an animation clip onto a REMesh character's own skeleton.
     ///
     /// The usual answer to "play a Mixamo clip on this rig" is a Humanoid avatar, and it is
     /// not available here: glTFast imports .glb through a ScriptedImporter, and its
@@ -15,7 +15,7 @@ namespace Polyfork.EditorTools
     /// avatar, and no avatar means no retargeting.
     ///
     /// What makes this tractable anyway is that the two skeletons are the same skeleton. The
-    /// clip packs use Mixamo's names with the `mixamorig:` prefix; a Polyfork character uses
+    /// clip packs use Mixamo's names with the `mixamorig:` prefix; a REMesh character uses
     /// the same names with the prefix stripped. Measured against the live catalogue: every
     /// one of naval-officer's 22 bones is driven by xbot's idle clip, and none of its bones
     /// is missing from it. The 45 curves left over are fingers, eyes and toes that a reduced
@@ -25,7 +25,7 @@ namespace Polyfork.EditorTools
     /// this particular character actually has. Deterministic, and it needs nothing of the
     /// importer.
     /// </summary>
-    static class PolyforkClipRetarget
+    static class REMeshClipRetarget
     {
         /// <summary>
         /// A copy of <paramref name="source"/> whose curves address <paramref name="root"/>'s
@@ -92,7 +92,7 @@ namespace Polyfork.EditorTools
             if (bound < 8)
             {
                 Debug.LogWarning(
-                    $"[Polyfork] '{source.name}' bound only {bound} rotation curve(s) to this rig. " +
+                    $"[REMesh] '{source.name}' bound only {bound} rotation curve(s) to this rig. " +
                     "The skeleton may not be the Mixamo one these clips expect.");
             }
 

@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// One complete set of knob values — everything a remix edit can change.
     /// </summary>
-    public sealed class PolyforkRemixSnapshot
+    public sealed class REMeshRemixSnapshot
     {
         public Dictionary<string, float> Ranges;
 
@@ -18,7 +18,7 @@ namespace Polyfork.EditorTools
         public Dictionary<string, Color> SlotColors;
         public string Colorway;
 
-        public PolyforkRemixSnapshot Clone() => new()
+        public REMeshRemixSnapshot Clone() => new()
         {
             Ranges = new Dictionary<string, float>(Ranges),
             Choices = new Dictionary<string, string>(Choices),
@@ -28,7 +28,7 @@ namespace Polyfork.EditorTools
         };
 
         /// <summary>True when the geometry differs, i.e. restoring needs a server rebuild.</summary>
-        public bool GeometryDiffers(PolyforkRemixSnapshot other)
+        public bool GeometryDiffers(REMeshRemixSnapshot other)
         {
             if (other == null || Ranges.Count != other.Ranges.Count) return true;
             if (Choices.Count != other.Choices.Count || Toggles.Count != other.Toggles.Count) return true;
@@ -60,15 +60,15 @@ namespace Polyfork.EditorTools
     /// reach into the user's scene edits, and vice versa. The window intercepts the editor's
     /// Undo/Redo commands while it has focus so the two stacks never interleave.
     /// </summary>
-    public sealed class PolyforkRemixHistory
+    public sealed class REMeshRemixHistory
     {
         const int Capacity = 64;
 
         /// <summary>Consecutive edits to the same control within this window collapse into one step.</summary>
         const double CoalesceSeconds = 0.9d;
 
-        readonly List<PolyforkRemixSnapshot> _undo = new();
-        readonly List<PolyforkRemixSnapshot> _redo = new();
+        readonly List<REMeshRemixSnapshot> _undo = new();
+        readonly List<REMeshRemixSnapshot> _redo = new();
 
         string _lastOpKey;
         double _lastOpTime;
@@ -90,7 +90,7 @@ namespace Polyfork.EditorTools
         /// name). Dragging a slider fires a change per frame, so repeats of the same key in
         /// quick succession are folded into the first snapshot, making one drag one step.
         /// </summary>
-        public void Record(PolyforkRemixSnapshot before, string opKey)
+        public void Record(REMeshRemixSnapshot before, string opKey)
         {
             var now = EditorApplication.timeSinceStartup;
 
@@ -110,7 +110,7 @@ namespace Polyfork.EditorTools
         }
 
         /// <summary>Steps back, handing <paramref name="current"/> to the redo stack.</summary>
-        public PolyforkRemixSnapshot Undo(PolyforkRemixSnapshot current)
+        public REMeshRemixSnapshot Undo(REMeshRemixSnapshot current)
         {
             if (_undo.Count == 0) return null;
 
@@ -123,7 +123,7 @@ namespace Polyfork.EditorTools
             return restored;
         }
 
-        public PolyforkRemixSnapshot Redo(PolyforkRemixSnapshot current)
+        public REMeshRemixSnapshot Redo(REMeshRemixSnapshot current)
         {
             if (_redo.Count == 0) return null;
 

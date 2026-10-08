@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Puts an imported asset's knobs back in the Inspector, so a model already placed in a
@@ -14,24 +14,24 @@ namespace Polyfork.EditorTools
     /// The alternative, which is what this replaces, is that importing freezes a model: to
     /// make the fence one section longer you find the asset again, guess what the sliders
     /// were, import a second copy and swap it by hand, leaving the first one orphaned in the
-    /// project. The values were never lost, only unwritten - PolyforkAssetLink writes them
+    /// project. The values were never lost, only unwritten - REMeshAssetLink writes them
     /// down, and this reads them back.
     ///
     /// Rebuilding replaces the meshes on the instance in place, so transforms, parenting,
     /// colliders and anything else attached to the object survive a knob change.
     /// </summary>
-    [CustomEditor(typeof(PolyforkAssetLink))]
-    public sealed class PolyforkAssetLinkEditor : UnityEditor.Editor
+    [CustomEditor(typeof(REMeshAssetLink))]
+    public sealed class REMeshAssetLinkEditor : UnityEditor.Editor
     {
-        PolyforkClient _client;
-        PolyforkGlbLoader _loader;
-        PolyforkBakerRegistry _bakers;
-        IPolyforkJsRuntime _js;
+        REMeshClient _client;
+        REMeshGlbLoader _loader;
+        REMeshBakerRegistry _bakers;
+        IREMeshJsRuntime _js;
         CancellationTokenSource _cts;
 
-        PolyforkParams _schema;
-        PolyforkKnobValues _values;
-        PolyforkAsset _asset;
+        REMeshParams _schema;
+        REMeshKnobValues _values;
+        REMeshAsset _asset;
 
         string _status;
         bool _loading;
@@ -45,16 +45,16 @@ namespace Polyfork.EditorTools
         {
             _cts = new CancellationTokenSource();
             EditorApplication.update += Tick;
-            _client = new PolyforkClient { ApiKey = PolyforkCredentials.Resolve(null) };
-            _loader = new PolyforkGlbLoader(_client);
+            _client = new REMeshClient { ApiKey = REMeshCredentials.Resolve(null) };
+            _loader = new REMeshGlbLoader(_client);
 
-            _bakers = new PolyforkBakerRegistry();
-            _bakers.Register(new PolyforkServerBaker(_client, _loader));
+            _bakers = new REMeshBakerRegistry();
+            _bakers.Register(new REMeshServerBaker(_client, _loader));
 
             // Same engine the gallery uses, when one is installed: a knob turned in the
             // Inspector should cost no more than a knob turned in the window.
-            _js = PolyforkJsRuntimeProvider.TryCreate();
-            if (_js != null) _bakers.Register(new PolyforkLocalBaker(_js, _client));
+            _js = REMeshJsRuntimeProvider.TryCreate();
+            if (_js != null) _bakers.Register(new REMeshLocalBaker(_js, _client));
 
             _ = LoadAsync();
         }
@@ -72,7 +72,7 @@ namespace Polyfork.EditorTools
 
         async Task LoadAsync()
         {
-            var link = (PolyforkAssetLink)target;
+            var link = (REMeshAssetLink)target;
             if (link == null || string.IsNullOrEmpty(link.assetId)) return;
 
             _loading = true;
@@ -92,7 +92,7 @@ namespace Polyfork.EditorTools
             }
             catch (Exception e)
             {
-                _status = $"Could not reach polyfork.dev ({e.Message}).";
+                _status = $"Could not reach remesh.dev ({e.Message}).";
             }
 
             _loading = false;
@@ -101,9 +101,9 @@ namespace Polyfork.EditorTools
 
         public override void OnInspectorGUI()
         {
-            var link = (PolyforkAssetLink)target;
+            var link = (REMeshAssetLink)target;
 
-            PolyforkBrand.DrawHeader(link.title ?? link.assetId);
+            REMeshBrand.DrawHeader(link.title ?? link.assetId);
             EditorGUILayout.Space(6f);
 
             if (string.IsNullOrEmpty(link.assetId))
@@ -116,7 +116,7 @@ namespace Polyfork.EditorTools
             {
                 EditorGUILayout.LabelField(link.assetId, EditorStyles.miniLabel);
                 GUILayout.FlexibleSpace();
-                if (!string.IsNullOrEmpty(link.page) && GUILayout.Button("Open on polyfork.dev", EditorStyles.miniButton))
+                if (!string.IsNullOrEmpty(link.page) && GUILayout.Button("Open on remesh.dev", EditorStyles.miniButton))
                     Application.OpenURL(link.page);
             }
 
@@ -143,13 +143,13 @@ namespace Polyfork.EditorTools
         {
             var drawn = 0;
 
-            foreach (var knob in _schema.All.OrderBy(k => k.Type == PolyforkKnobType.Color ? 1 : 0)
+            foreach (var knob in _schema.All.OrderBy(k => k.Type == REMeshKnobType.Color ? 1 : 0)
                          .ThenBy(k => k.Name, StringComparer.Ordinal))
             {
                 // What the baker that would serve this asset can honour, not what the server
                 // alone can: with a local engine that is a wider set.
                 var support = _bakers.Supports(_asset, _schema, knob);
-                if (support == PolyforkKnobSupport.Unsupported) continue;
+                if (support == REMeshKnobSupport.Unsupported) continue;
 
                 drawn++;
                 var label = new GUIContent(knob.Label, knob.Describe);
@@ -158,7 +158,7 @@ namespace Polyfork.EditorTools
 
                 switch (knob.Type)
                 {
-                    case PolyforkKnobType.Range when knob.HasRange:
+                    case REMeshKnobType.Range when knob.HasRange:
                     {
                         var current = _values.GetNumber(knob.Name, knob.DefaultFloat);
                         var next = knob.IsIntegral
@@ -170,14 +170,14 @@ namespace Polyfork.EditorTools
                         continue;
                     }
 
-                    case PolyforkKnobType.Toggle:
+                    case REMeshKnobType.Toggle:
                     {
                         var next = EditorGUILayout.Toggle(label, _values.GetBool(knob.Name, knob.DefaultBool));
                         if (EditorGUI.EndChangeCheck()) Schedule(() => _values.SetBool(knob.Name, next));
                         continue;
                     }
 
-                    case PolyforkKnobType.Choice when knob.Options.Count > 0:
+                    case REMeshKnobType.Choice when knob.Options.Count > 0:
                     {
                         var options = knob.Options.ToList();
                         var index = Mathf.Max(0, options.IndexOf(_values.GetString(knob.Name, knob.DefaultString)));
@@ -188,9 +188,9 @@ namespace Polyfork.EditorTools
                         continue;
                     }
 
-                    case PolyforkKnobType.Color:
+                    case REMeshKnobType.Color:
                     {
-                        PolyforkParams.TryParseHex(knob.DefaultString, out var authored);
+                        REMeshParams.TryParseHex(knob.DefaultString, out var authored);
                         _values.TryGetColor(knob.Name, out var current);
                         if (current == default) current = authored;
 
@@ -233,10 +233,10 @@ namespace Polyfork.EditorTools
 
             _rebuildAt = -1d;
 
-            if (target is PolyforkAssetLink link) _ = RebuildAsync(link);
+            if (target is REMeshAssetLink link) _ = RebuildAsync(link);
         }
 
-        void DrawActions(PolyforkAssetLink link)
+        void DrawActions(REMeshAssetLink link)
         {
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -250,7 +250,7 @@ namespace Polyfork.EditorTools
                 {
                     if (GUILayout.Button("Reset to published", EditorStyles.miniButton, GUILayout.Width(140f)))
                     {
-                        _values = new PolyforkKnobValues();
+                        _values = new REMeshKnobValues();
                         Schedule(() => { });
                     }
                 }
@@ -269,7 +269,7 @@ namespace Polyfork.EditorTools
         /// attached to it - transform, colliders, scripts, its place in a hierarchy, its
         /// prefab connection - is untouched by a knob change.
         /// </summary>
-        async Task RebuildAsync(PolyforkAssetLink link)
+        async Task RebuildAsync(REMeshAssetLink link)
         {
             _rebuilding = true;
             Repaint();
@@ -285,7 +285,7 @@ namespace Polyfork.EditorTools
                 }
 
                 built = await baker.BakeAsync(
-                    new PolyforkBakeRequest(_asset, _schema, _values), _cts.Token);
+                    new REMeshBakeRequest(_asset, _schema, _values), _cts.Token);
 
                 if (built == null)
                 {
@@ -296,7 +296,7 @@ namespace Polyfork.EditorTools
                 /* Keep whatever material the object is already wearing.
                  *
                  * A bake hands back meshes dressed in the baker's own material, and the local
-                 * baker's is Polyfork/Vertex Color - a preview shader that does its own
+                 * baker's is REMesh/Vertex Color - a preview shader that does its own
                  * lighting and ignores the scene's. Dropping that onto an object in a real
                  * scene is why a rebuilt model suddenly looked unlit: it was, and it had
                  * stopped being the glTFast material the import gave it.
@@ -306,7 +306,7 @@ namespace Polyfork.EditorTools
                  * behaviour they would expect without being told. */
                 var existing = link.GetComponentInChildren<Renderer>(true)?.sharedMaterial;
 
-                Undo.RegisterFullObjectHierarchyUndo(link.gameObject, "Polyfork rebuild");
+                Undo.RegisterFullObjectHierarchyUndo(link.gameObject, "REMesh rebuild");
 
                 foreach (Transform child in link.transform.Cast<Transform>().ToList())
                     Undo.DestroyObjectImmediate(child.gameObject);
@@ -314,7 +314,7 @@ namespace Polyfork.EditorTools
                 foreach (Transform child in built.transform.Cast<Transform>().ToList())
                 {
                     child.SetParent(link.transform, worldPositionStays: false);
-                    Undo.RegisterCreatedObjectUndo(child.gameObject, "Polyfork rebuild");
+                    Undo.RegisterCreatedObjectUndo(child.gameObject, "REMesh rebuild");
                 }
 
                 if (existing != null)
@@ -335,7 +335,7 @@ namespace Polyfork.EditorTools
             catch (Exception e)
             {
                 _status = $"Rebuild failed: {e.Message}";
-                Debug.LogWarning($"[Polyfork] rebuild of {link.assetId} failed: {e}");
+                Debug.LogWarning($"[REMesh] rebuild of {link.assetId} failed: {e}");
             }
             finally
             {

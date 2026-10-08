@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Lazily downloads gallery thumbnails and keeps them on disk, so reopening the window
     /// is instant and scrolling never re-hits the network.
     /// </summary>
-    public sealed class PolyforkThumbnailCache : IDisposable
+    public sealed class REMeshThumbnailCache : IDisposable
     {
         /// <summary>
         /// Downloads at once. Scrolling asks for whatever came into view, and without a cap a
@@ -35,7 +35,7 @@ namespace Polyfork.EditorTools
         /// one per arriving thumbnail was most of the choppiness.</summary>
         const double RepaintInterval = 0.08d;
 
-        readonly PolyforkClient _client;
+        readonly REMeshClient _client;
         readonly string _dir;
         readonly Dictionary<string, Texture2D> _textures = new();
         readonly HashSet<string> _known = new();
@@ -55,10 +55,10 @@ namespace Polyfork.EditorTools
         /// <summary>Raised when a thumbnail arrives, so the window can repaint.</summary>
         public event Action Changed;
 
-        public PolyforkThumbnailCache(PolyforkClient client)
+        public REMeshThumbnailCache(REMeshClient client)
         {
             _client = client;
-            _dir = Path.Combine(Path.GetTempPath(), "polyfork-thumbs");
+            _dir = Path.Combine(Path.GetTempPath(), "remesh-thumbs");
             Directory.CreateDirectory(_dir);
 
             EditorApplication.update += Tick;

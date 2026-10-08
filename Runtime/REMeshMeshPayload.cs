@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// The result of running an asset module, decoded into Unity meshes.
@@ -16,7 +16,7 @@ namespace Polyfork
     /// Vertex colours arrive linear, the same convention glTF uses, so the meshes this
     /// produces are interchangeable with ones loaded from a baked GLB.
     /// </summary>
-    public sealed class PolyforkMeshPayload
+    public sealed class REMeshMeshPayload
     {
         public sealed class Entry
         {
@@ -51,9 +51,9 @@ namespace Polyfork
             }
         }
 
-        public static PolyforkMeshPayload Parse(string json)
+        public static REMeshMeshPayload Parse(string json)
         {
-            var payload = new PolyforkMeshPayload();
+            var payload = new REMeshMeshPayload();
             if (string.IsNullOrWhiteSpace(json)) return payload;
 
             var root = JObject.Parse(json);
@@ -84,7 +84,7 @@ namespace Polyfork
         /// Builds the hierarchy. Each entry becomes a child carrying its own world matrix,
         /// which keeps rigged assets' pivots intact rather than flattening them.
         /// </summary>
-        public GameObject ToGameObject(Material material, Transform parent = null, string name = "PolyforkAsset")
+        public GameObject ToGameObject(Material material, Transform parent = null, string name = "REMeshAsset")
         {
             var root = new GameObject(name);
             if (parent != null) root.transform.SetParent(parent, false);
@@ -154,7 +154,7 @@ namespace Polyfork
 
         static Mesh BuildMesh(Entry entry)
         {
-            var mesh = new Mesh { name = string.IsNullOrEmpty(entry.Name) ? "PolyforkMesh" : entry.Name };
+            var mesh = new Mesh { name = string.IsNullOrEmpty(entry.Name) ? "REMeshMesh" : entry.Name };
             Fill(mesh, entry);
             return mesh;
         }
@@ -166,7 +166,7 @@ namespace Polyfork
              * the end of the new vertex array, and Unity rejects the whole assignment. */
             mesh.Clear();
 
-            // Polyfork geometry routinely exceeds 65k vertices once knobs raise part counts.
+            // REMesh geometry routinely exceeds 65k vertices once knobs raise part counts.
             if (entry.Positions.Length > ushort.MaxValue)
                 mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 

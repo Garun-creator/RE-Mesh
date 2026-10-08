@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// Exercises the whole local-baking path against a real JS engine.
@@ -16,50 +16,50 @@ namespace Polyfork.EditorTools
     ///
     /// Uses a free asset, so it needs no key.
     /// </summary>
-    public static class PolyforkLocalBakeSmokeTest
+    public static class REMeshLocalBakeSmokeTest
     {
         const string FreeAssetId = "street-lamp-29f365";
 
-        [MenuItem("Tools/Polyfork/Diagnostics/Smoke-test local baking", priority = 100)]
+        [MenuItem("Tools/MESHRA/Diagnostics/Smoke-test local baking", priority = 100)]
         public static void Run() => _ = RunAsync();
 
         /// <summary>Greyed out unless a JS engine is actually installed, so the menu does not
         /// offer to test something this project cannot do.</summary>
-        [MenuItem("Tools/Polyfork/Diagnostics/Smoke-test local baking", validate = true)]
-        static bool CanRun() => PolyforkJsRuntimeProvider.IsAvailable;
+        [MenuItem("Tools/MESHRA/Diagnostics/Smoke-test local baking", validate = true)]
+        static bool CanRun() => REMeshJsRuntimeProvider.IsAvailable;
 
         public static async Task RunAsync()
         {
-            if (!PolyforkJsRuntimeProvider.IsAvailable)
+            if (!REMeshJsRuntimeProvider.IsAvailable)
             {
-                Debug.LogWarning("[Polyfork] no JS engine is registered, so rebuilds go to the " +
-                                 "server. Open Tools ▸ Polyfork ▸ Setup for what that means and " +
+                Debug.LogWarning("[REMesh] no JS engine is registered, so rebuilds go to the " +
+                                 "server. Open Tools ▸ REMesh ▸ Setup for what that means and " +
                                  "where the optional engine lives.");
                 return;
             }
 
-            IPolyforkJsRuntime runtime = null;
+            IREMeshJsRuntime runtime = null;
             try
             {
                 var sw = Stopwatch.StartNew();
-                runtime = PolyforkJsRuntimeProvider.TryCreate();
+                runtime = REMeshJsRuntimeProvider.TryCreate();
                 sw.Stop();
 
                 if (runtime == null)
                 {
-                    Debug.LogError("[Polyfork] the JS runtime did not start.");
+                    Debug.LogError("[REMesh] the JS runtime did not start.");
                     return;
                 }
 
-                Debug.Log($"[Polyfork] {PolyforkJsRuntimeProvider.EngineName} started and parsed " +
+                Debug.Log($"[REMesh] {REMeshJsRuntimeProvider.EngineName} started and parsed " +
                           $"the three.js bundle in {sw.ElapsedMilliseconds} ms.");
 
-                var client = new PolyforkClient { ApiKey = PolyforkCredentials.Resolve(null) };
+                var client = new REMeshClient { ApiKey = REMeshCredentials.Resolve(null) };
                 var asset = await client.GetAssetAsync(FreeAssetId);
 
                 if (!asset.HasModule)
                 {
-                    Debug.LogWarning($"[Polyfork] {FreeAssetId} publishes no module for this connection.");
+                    Debug.LogWarning($"[REMesh] {FreeAssetId} publishes no module for this connection.");
                     return;
                 }
 
@@ -67,7 +67,7 @@ namespace Polyfork.EditorTools
                 sw.Restart();
                 runtime.LoadModule(asset.Id, source);
                 sw.Stop();
-                Debug.Log($"[Polyfork] module registered in {sw.ElapsedMilliseconds} ms " +
+                Debug.Log($"[REMesh] module registered in {sw.ElapsedMilliseconds} ms " +
                           $"({source.Length / 1024f:0.0} KB of source).");
 
                 // Defaults, then a structural knob the remix endpoint refuses to bake.
@@ -78,12 +78,12 @@ namespace Polyfork.EditorTools
                 const int iterations = 20;
                 for (var i = 0; i < iterations; i++) runtime.Bake(asset.Id, "{\"tallness\":1.0}");
                 sw.Stop();
-                Debug.Log($"[Polyfork] {sw.Elapsed.TotalMilliseconds / iterations:0.00} ms per bake " +
+                Debug.Log($"[REMesh] {sw.Elapsed.TotalMilliseconds / iterations:0.00} ms per bake " +
                           $"(a server rebuild is roughly 120 ms).");
             }
             catch (Exception e)
             {
-                Debug.LogError($"[Polyfork] local bake smoke test failed: {e}");
+                Debug.LogError($"[REMesh] local bake smoke test failed: {e}");
             }
             finally
             {
@@ -91,7 +91,7 @@ namespace Polyfork.EditorTools
             }
         }
 
-        static void Report(IPolyforkJsRuntime runtime, string assetId, string paramsJson, string label)
+        static void Report(IREMeshJsRuntime runtime, string assetId, string paramsJson, string label)
         {
             var sw = Stopwatch.StartNew();
             var json = runtime.Bake(assetId, paramsJson);
@@ -99,12 +99,12 @@ namespace Polyfork.EditorTools
 
             if (string.IsNullOrEmpty(json))
             {
-                Debug.LogError($"[Polyfork] {label}: the module produced nothing.");
+                Debug.LogError($"[REMesh] {label}: the module produced nothing.");
                 return;
             }
 
-            var payload = PolyforkMeshPayload.Parse(json);
-            Debug.Log($"[Polyfork] {label}: meshes={payload.Meshes.Count} " +
+            var payload = REMeshMeshPayload.Parse(json);
+            Debug.Log($"[REMesh] {label}: meshes={payload.Meshes.Count} " +
                       $"verts={payload.TotalVertices} tris={payload.TotalTriangles} " +
                       $"payload={json.Length / 1024f:0.0} KB in {sw.ElapsedMilliseconds} ms");
         }

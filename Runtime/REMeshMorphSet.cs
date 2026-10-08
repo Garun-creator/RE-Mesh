@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Drives a range knob by interpolating between two baked meshes instead of rebuilding.
@@ -18,7 +18,7 @@ namespace Polyfork
     /// Knobs that change the vertex count - part counts like `planks`, `slats`, `facets` -
     /// cannot be morphed and fall back to discrete prewarmed stops.
     /// </summary>
-    public sealed class PolyforkMorphSet
+    public sealed class REMeshMorphSet
     {
         sealed class Target
         {
@@ -47,10 +47,10 @@ namespace Polyfork
         /// comparing the two results can tell them apart. street-lamp's `tallness` moves
         /// vertices; plastic-drum's gains a rib.
         /// </summary>
-        public static PolyforkMorphSet Build(
+        public static REMeshMorphSet Build(
             GameObject atMin, GameObject atMax, string knobName, float minValue, float maxValue)
         {
-            var set = new PolyforkMorphSet
+            var set = new REMeshMorphSet
             {
                 KnobName = knobName,
                 MinValue = minValue,

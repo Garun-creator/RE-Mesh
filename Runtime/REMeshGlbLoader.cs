@@ -8,22 +8,22 @@ using System.Threading.Tasks;
 using GLTFast;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
-    /// Loads Polyfork GLBs into scene objects, with a two-tier cache:
+    /// Loads REMesh GLBs into scene objects, with a two-tier cache:
     /// bytes on disk (survives app restarts) and parsed results in memory.
     /// </summary>
-    public sealed class PolyforkGlbLoader
+    public sealed class REMeshGlbLoader
     {
-        readonly PolyforkClient _client;
+        readonly REMeshClient _client;
         readonly string _cacheDir;
         readonly Dictionary<string, Task<byte[]>> _inFlight = new();
 
-        public PolyforkGlbLoader(PolyforkClient client, string cacheDir = null)
+        public REMeshGlbLoader(REMeshClient client, string cacheDir = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
-            _cacheDir = cacheDir ?? Path.Combine(Application.persistentDataPath, "polyfork-glb");
+            _cacheDir = cacheDir ?? Path.Combine(Application.persistentDataPath, "remesh-glb");
             Directory.CreateDirectory(_cacheDir);
         }
 
@@ -86,7 +86,7 @@ namespace Polyfork
             }
             catch (IOException e)
             {
-                Debug.LogWarning($"[Polyfork] could not cache {url}: {e.Message}");
+                Debug.LogWarning($"[REMesh] could not cache {url}: {e.Message}");
             }
 
             return bytes;
@@ -117,25 +117,25 @@ namespace Polyfork
             {
                 GenerateMipMaps = false,
                 AnisotropicFilterLevel = 0,
-                // Polyfork assets are flat-shaded with baked vertex colours and no textures,
+                // REMesh assets are flat-shaded with baked vertex colours and no textures,
                 // so there is nothing to gain from texture-side work.
                 DefaultMinFilterMode = GLTFast.Schema.Sampler.MinFilterMode.Nearest,
                 DefaultMagFilterMode = GLTFast.Schema.Sampler.MagFilterMode.Nearest
             };
 
             var ok = await gltf.Load(bytes, new Uri(sourceUri), settings, ct);
-            if (!ok) throw new PolyforkLoadException($"glTF import failed for {sourceUri}");
+            if (!ok) throw new REMeshLoadException($"glTF import failed for {sourceUri}");
 
             ct.ThrowIfCancellationRequested();
 
-            var root = new GameObject("PolyforkAsset");
+            var root = new GameObject("REMeshAsset");
             if (parent != null) root.transform.SetParent(parent, false);
 
             var instantiated = await gltf.InstantiateMainSceneAsync(root.transform, ct);
             if (!instantiated)
             {
                 DestroyObject(root);
-                throw new PolyforkLoadException($"glTF instantiation failed for {sourceUri}");
+                throw new REMeshLoadException($"glTF instantiation failed for {sourceUri}");
             }
 
             // In the editor these are transient (preview / import staging), so keep the whole
@@ -184,13 +184,13 @@ namespace Polyfork
             }
             catch (IOException e)
             {
-                Debug.LogWarning($"[Polyfork] could not clear GLB cache: {e.Message}");
+                Debug.LogWarning($"[REMesh] could not clear GLB cache: {e.Message}");
             }
         }
     }
 
-    public sealed class PolyforkLoadException : Exception
+    public sealed class REMeshLoadException : Exception
     {
-        public PolyforkLoadException(string message) : base(message) { }
+        public REMeshLoadException(string message) : base(message) { }
     }
 }

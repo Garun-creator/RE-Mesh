@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 RE:Mesh (Garun-creator)
+Copyright (c) 2026 MESHRA - Team CODE SYNERGY (Sahil Sharma, Aditya Pratap Singh Tomar, Pratyksh Singh Parmar, Garun Pratap Singh Bhadoriya)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

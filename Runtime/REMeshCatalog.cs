@@ -5,22 +5,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Scene-level entry point: owns the client, the loader and a warm queue of
     /// ready-to-show assets so anything user-facing can pull instantly.
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Polyfork/Polyfork Catalog")]
-    public sealed class PolyforkCatalog : MonoBehaviour
+    [AddComponentMenu("REMesh/REMesh Catalog")]
+    public sealed class REMeshCatalog : MonoBehaviour
     {
         [Header("Connection")]
-        [Tooltip("Base URL of the Polyfork instance.")]
-        [SerializeField] string baseUrl = PolyforkClient.DefaultBaseUrl;
+        [Tooltip("Base URL of the REMesh instance.")]
+        [SerializeField] string baseUrl = REMeshClient.DefaultBaseUrl;
 
-        [Tooltip("Optional API key. Prefer the POLYFORK_API_KEY environment variable or a " +
-                 "polyfork.key file - a value typed here is serialised into the scene and committed. " +
+        [Tooltip("Optional API key. Prefer the REMESH_API_KEY environment variable or a " +
+                 "remesh.key file - a value typed here is serialised into the scene and committed. " +
                  "Leave empty to use public preview GLBs, which cover the whole catalogue.")]
         [SerializeField] string apiKey = "";
 
@@ -28,7 +28,7 @@ namespace Polyfork
         [Tooltip("Only surface assets whose knobs can be remixed. Recommended for the showcase.")]
         [SerializeField] bool remixableOnly = true;
 
-        [Tooltip("Skip anything heavier than this. Polyfork averages ~742 triangles; 0 disables the filter.")]
+        [Tooltip("Skip anything heavier than this. REMesh averages ~742 triangles; 0 disables the filter.")]
         [SerializeField] int maxTriangles = 3000;
 
         [Tooltip("Only surface assets whose createAsset() module this connection can fetch. " +
@@ -44,7 +44,7 @@ namespace Polyfork
                  "Worth turning on for structural knobs, ideally with the V8 backend.")]
         [SerializeField] bool enableLocalBaking;
 
-        IPolyforkJsRuntime _jsRuntime;
+        IREMeshJsRuntime _jsRuntime;
 
         [Header("Prefetch")]
         [Tooltip("How many upcoming assets to download and parse ahead of time.")]
@@ -57,34 +57,34 @@ namespace Polyfork
         // server rather than configured here. Until that first sync lands the budget assumes
         // its floor, which is why nothing speculative happens before it does.
 
-        public PolyforkClient Client { get; private set; }
-        public PolyforkGlbLoader Loader { get; private set; }
+        public REMeshClient Client { get; private set; }
+        public REMeshGlbLoader Loader { get; private set; }
 
         /// <summary>Guards remix rebuilds. Unlimited once an API key is attached.</summary>
-        public PolyforkRemixBudget RemixBudget { get; private set; }
+        public REMeshRemixBudget RemixBudget { get; private set; }
 
         /// <summary>
         /// Available bake paths, best first. The server baker is always registered; a local
         /// baker that runs asset modules registers itself on top when its prerequisites are
         /// met, at which point every knob becomes live and nothing is metered.
         /// </summary>
-        public PolyforkBakerRegistry Bakers { get; private set; }
+        public REMeshBakerRegistry Bakers { get; private set; }
 
         /// <summary>The baker that would actually serve this asset.</summary>
-        public IPolyforkBaker BakerFor(PolyforkAsset asset, PolyforkParams schema)
+        public IREMeshBaker BakerFor(REMeshAsset asset, REMeshParams schema)
             => Bakers?.Resolve(asset, schema);
 
         /// <summary>Every asset that passed the filter, in shuffled order.</summary>
-        public IReadOnlyList<PolyforkAsset> Assets => _assets;
+        public IReadOnlyList<REMeshAsset> Assets => _assets;
 
         public bool Ready { get; private set; }
 
         public event Action Loaded;
         public event Action<string> LoadFailed;
 
-        readonly List<PolyforkAsset> _assets = new();
-        readonly Dictionary<string, PolyforkParams> _paramCache = new();
-        readonly Queue<PolyforkAsset> _upcoming = new();
+        readonly List<REMeshAsset> _assets = new();
+        readonly Dictionary<string, REMeshParams> _paramCache = new();
+        readonly Queue<REMeshAsset> _upcoming = new();
 
         CancellationTokenSource _cts;
         int _cursor;
@@ -92,27 +92,27 @@ namespace Polyfork
 
         void Awake()
         {
-            var key = PolyforkCredentials.Resolve(apiKey, out var keySource);
+            var key = REMeshCredentials.Resolve(apiKey, out var keySource);
 
-            Client = new PolyforkClient(baseUrl) { ApiKey = key };
-            Loader = new PolyforkGlbLoader(Client);
-            RemixBudget = new PolyforkRemixBudget();
+            Client = new REMeshClient(baseUrl) { ApiKey = key };
+            Loader = new REMeshGlbLoader(Client);
+            RemixBudget = new REMeshRemixBudget();
 
-            Bakers = new PolyforkBakerRegistry();
-            Bakers.Register(new PolyforkServerBaker(Client, Loader, RemixBudget));
+            Bakers = new REMeshBakerRegistry();
+            Bakers.Register(new REMeshServerBaker(Client, Loader, RemixBudget));
 
             RegisterLocalBaker();
 
             Debug.Log(key != null
-                ? $"[Polyfork] API key {PolyforkCredentials.Redact(key)} from {keySource}."
-                : "[Polyfork] no API key; public previews only.");
+                ? $"[REMesh] API key {REMeshCredentials.Redact(key)} from {keySource}."
+                : "[REMesh] no API key; public previews only.");
 
-            if (keySource == PolyforkCredentials.Source.Inspector)
+            if (keySource == REMeshCredentials.Source.Inspector)
             {
                 Debug.LogWarning(
-                    "[Polyfork] the API key is set on the component, so it is saved into the scene asset. " +
-                    $"Move it to the {PolyforkCredentials.EnvironmentVariable} environment variable or a " +
-                    $"{PolyforkCredentials.KeyFileName} file before committing.");
+                    "[REMesh] the API key is set on the component, so it is saved into the scene asset. " +
+                    $"Move it to the {REMeshCredentials.EnvironmentVariable} environment variable or a " +
+                    $"{REMeshCredentials.KeyFileName} file before committing.");
             }
 
             _cts = new CancellationTokenSource();
@@ -125,13 +125,13 @@ namespace Polyfork
         /// </summary>
         void RegisterLocalBaker()
         {
-            if (!enableLocalBaking || !PolyforkJsRuntimeProvider.IsAvailable) return;
+            if (!enableLocalBaking || !REMeshJsRuntimeProvider.IsAvailable) return;
 
-            _jsRuntime = PolyforkJsRuntimeProvider.TryCreate();
+            _jsRuntime = REMeshJsRuntimeProvider.TryCreate();
             if (_jsRuntime == null) return;   // TryCreate already explained why
 
-            Bakers.Register(new PolyforkLocalBaker(_jsRuntime, Client));
-            Debug.Log($"[Polyfork] local baking active via {PolyforkJsRuntimeProvider.EngineName}; " +
+            Bakers.Register(new REMeshLocalBaker(_jsRuntime, Client));
+            Debug.Log($"[REMesh] local baking active via {REMeshJsRuntimeProvider.EngineName}; " +
                       "assets with a fetchable module rebuild in-process.");
         }
 
@@ -151,7 +151,7 @@ namespace Polyfork
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] could not read the remix allowance ({e.Message}); " +
+                Debug.LogWarning($"[REMesh] could not read the remix allowance ({e.Message}); " +
                                  "assuming the floor until it is reachable.");
             }
         }
@@ -161,7 +161,7 @@ namespace Polyfork
             try
             {
                 await RefreshAccessAsync(_cts.Token);
-                if (RemixBudget.Synced) Debug.Log($"[Polyfork] {RemixBudget.Access.Describe()}");
+                if (RemixBudget.Synced) Debug.Log($"[REMesh] {RemixBudget.Access.Describe()}");
 
                 var all = await Client.GetAllAssetsAsync(null, _cts.Token);
 
@@ -175,12 +175,12 @@ namespace Polyfork
 
                 if (_assets.Count == 0)
                 {
-                    LoadFailed?.Invoke("No Polyfork assets matched the filter.");
+                    LoadFailed?.Invoke("No REMesh assets matched the filter.");
                     return;
                 }
 
                 Ready = true;
-                Debug.Log($"[Polyfork] catalogue ready: {_assets.Count} assets (of {all.Count} published).");
+                Debug.Log($"[REMesh] catalogue ready: {_assets.Count} assets (of {all.Count} published).");
                 Loaded?.Invoke();
 
                 PumpPrefetch();
@@ -191,7 +191,7 @@ namespace Polyfork
             }
             catch (Exception e)
             {
-                Debug.LogError($"[Polyfork] catalogue load failed: {e.Message}");
+                Debug.LogError($"[REMesh] catalogue load failed: {e.Message}");
                 LoadFailed?.Invoke(e.Message);
             }
         }
@@ -208,7 +208,7 @@ namespace Polyfork
         }
 
         /// <summary>Next asset in the rotation. Cycles forever.</summary>
-        public PolyforkAsset Next()
+        public REMeshAsset Next()
         {
             if (_assets.Count == 0) return null;
             var a = _assets[_cursor % _assets.Count];
@@ -217,13 +217,13 @@ namespace Polyfork
             return a;
         }
 
-        public PolyforkAsset Peek(int offset = 0)
+        public REMeshAsset Peek(int offset = 0)
             => _assets.Count == 0 ? null : _assets[(_cursor + offset) % _assets.Count];
 
         /// <summary>
         /// Knob schema for an asset, cached. Returns null when the asset publishes none.
         /// </summary>
-        public async Task<PolyforkParams> GetParamsAsync(string assetId, CancellationToken ct = default)
+        public async Task<REMeshParams> GetParamsAsync(string assetId, CancellationToken ct = default)
         {
             if (_paramCache.TryGetValue(assetId, out var cached)) return cached;
 
@@ -240,14 +240,14 @@ namespace Polyfork
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] no knob schema for {assetId}: {e.Message}");
+                Debug.LogWarning($"[REMesh] no knob schema for {assetId}: {e.Message}");
                 _paramCache[assetId] = null;
                 return null;
             }
         }
 
         /// <summary>Base (unmodified) GLB URL for an asset.</summary>
-        public string BaseGlbUrl(PolyforkAsset asset) => asset?.PreviewGlb;
+        public string BaseGlbUrl(REMeshAsset asset) => asset?.PreviewGlb;
 
         /// <summary>
         /// Warms the disk cache for the next few assets so pulling one is instant.
@@ -269,7 +269,7 @@ namespace Polyfork
             }
         }
 
-        async Task PrefetchAsync(PolyforkAsset asset)
+        async Task PrefetchAsync(REMeshAsset asset)
         {
             _activePrefetch++;
             try
@@ -283,7 +283,7 @@ namespace Polyfork
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Polyfork] prefetch failed for {asset.Id}: {e.Message}");
+                Debug.LogWarning($"[REMesh] prefetch failed for {asset.Id}: {e.Message}");
             }
             finally
             {
@@ -302,3 +302,10 @@ namespace Polyfork
         }
     }
 }
+
+namespace MeshRA
+{
+    [AddComponentMenu("MeshRA/MeshRA Catalog")]
+    public class MeshRACatalog : REMesh.REMeshCatalog {}
+}
+

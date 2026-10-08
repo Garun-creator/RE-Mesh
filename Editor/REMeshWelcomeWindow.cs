@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace REMesh.EditorTools
 {
     /// <summary>
     /// The front door: shown once after the package is installed, and any time from
-    /// <c>Tools ▸ Polyfork ▸ Welcome</c>.
+    /// <c>Tools ▸ REMesh ▸ Welcome</c>.
     ///
     /// It exists because the first thing a new user needs to know is that they do not need
     /// an account. Browsing, previewing and remixing all work with no key at all. Left
@@ -20,7 +20,7 @@ namespace Polyfork.EditorTools
     /// and tier names belong to the server, and a hardcoded "40 an hour" becomes a lie the
     /// first time pricing moves.
     /// </summary>
-    public sealed class PolyforkWelcomeWindow : EditorWindow
+    public sealed class REMeshWelcomeWindow : EditorWindow
     {
         /// <summary>Bumped only when the window has something new to say.</summary>
         const int Revision = 2;
@@ -33,7 +33,7 @@ namespace Polyfork.EditorTools
         /// which .NET is free to randomise per process. If it ever were randomised the key
         /// would differ on every launch, and a one-time welcome would greet the user forever.
         /// </summary>
-        static string SeenKey => $"Polyfork.Welcome.Seen.{Fnv1a(Application.dataPath):X8}";
+        static string SeenKey => $"REMesh.Welcome.Seen.{Fnv1a(Application.dataPath):X8}";
 
         static uint Fnv1a(string s)
         {
@@ -45,21 +45,21 @@ namespace Polyfork.EditorTools
             }
         }
 
-        PolyforkAccess _access;
+        REMeshAccess _access;
         bool _loading = true;
         string _error;
         CancellationTokenSource _cts;
 
-        [MenuItem("Tools/Polyfork/Welcome", priority = 2)]
+        [MenuItem("Tools/MESHRA/Welcome", priority = 2)]
         public static void Open()
         {
-            var window = GetWindow<PolyforkWelcomeWindow>(utility: true, title: "Polyfork", focus: true);
-            PolyforkBrand.ApplyTitle(window, "Polyfork");
+            var window = GetWindow<REMeshWelcomeWindow>(utility: true, title: "MESHRA", focus: true);
+            MeshRABrand.ApplyTitle(window, "MESHRA Studio");
 
             // Fixed size: the content does not reflow, and a utility window that remembers a
             // stretched size from last time leaves a lake of grey under the buttons.
             // Tall enough for the setup CTA, which only appears when no engine is installed.
-            var size = new Vector2(470f, PolyforkJsRuntimeProvider.IsAvailable ? 340f : 392f);
+            var size = new Vector2(470f, REMeshJsRuntimeProvider.IsAvailable ? 340f : 392f);
             window.minSize = size;
             window.maxSize = size;
             window.ShowUtility();
@@ -104,7 +104,7 @@ namespace Polyfork.EditorTools
         {
             try
             {
-                var client = new PolyforkClient { ApiKey = PolyforkCredentials.Resolve(null) };
+                var client = new REMeshClient { ApiKey = REMeshCredentials.Resolve(null) };
                 _access = await client.GetAccessAsync(_cts.Token);
             }
             catch (OperationCanceledException)
@@ -123,8 +123,8 @@ namespace Polyfork.EditorTools
         /// <summary>
         /// Whether this connection is signed in.
         ///
-        /// Answered by the server, not by PolyforkKeySettings: a key can arrive from the
-        /// POLYFORK_API_KEY environment variable or a polyfork.key file as well as from
+        /// Answered by the server, not by REMeshKeySettings: a key can arrive from the
+        /// REMESH_API_KEY environment variable or a remesh.key file as well as from
         /// EditorPrefs, and reading only EditorPrefs told a signed-in Founders user that no
         /// account was needed while quoting them their 900 bakes an hour.
         /// </summary>
@@ -155,16 +155,16 @@ namespace Polyfork.EditorTools
             EditorGUI.DrawRect(rect, EditorGUIUtility.isProSkin
                 ? new Color(0.145f, 0.15f, 0.165f)
                 : new Color(0.93f, 0.94f, 0.96f));
-            EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 2f, rect.width, 2f), PolyforkBrand.Accent);
+            EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 2f, rect.width, 2f), REMeshBrand.Accent);
 
-            var mark = PolyforkBrand.Mark;
+            var mark = REMeshBrand.Mark;
             if (mark != null)
             {
                 GUI.DrawTexture(new Rect(rect.x + 18f, rect.y + 20f, 56f, 56f), mark, ScaleMode.ScaleToFit);
             }
 
             var title = new GUIStyle(EditorStyles.boldLabel) { fontSize = 20 };
-            GUI.Label(new Rect(rect.x + 88f, rect.y + 24f, rect.width - 100f, 26f), "Polyfork", title);
+            GUI.Label(new Rect(rect.x + 88f, rect.y + 24f, rect.width - 100f, 26f), "REMesh", title);
 
             var sub = new GUIStyle(EditorStyles.label) { wordWrap = true, fontSize = 11 };
             sub.normal.textColor = EditorStyles.centeredGreyMiniLabel.normal.textColor;
@@ -185,14 +185,14 @@ namespace Polyfork.EditorTools
         {
             if (_loading)
             {
-                EditorGUILayout.LabelField("Saying hello to polyfork.dev...", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("Saying hello to remesh.dev...", EditorStyles.miniLabel);
                 return;
             }
 
             if (_error != null)
             {
                 EditorGUILayout.LabelField(
-                    $"Could not reach polyfork.dev ({_error}). Everything still works once you are online.",
+                    $"Could not reach remesh.dev ({_error}). Everything still works once you are online.",
                     EditorStyles.wordWrappedMiniLabel);
                 return;
             }
@@ -201,7 +201,7 @@ namespace Polyfork.EditorTools
 
             if (SignedIn)
             {
-                style.normal.textColor = PolyforkBrand.Accent;
+                style.normal.textColor = REMeshBrand.Accent;
                 EditorGUILayout.LabelField($"Signed in — {_access.Describe()}. Have fun.", style);
                 return;
             }
@@ -237,17 +237,17 @@ namespace Polyfork.EditorTools
             if (SignedIn)
             {
                 if (GUILayout.Button("Browse the catalogue", GUILayout.Height(32f)))
-                    SwapFor(PolyforkGalleryWindow.Open);
+                    SwapFor(REMeshGalleryWindow.Open);
             }
             else
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     if (GUILayout.Button("Start browsing — it's free", GUILayout.Height(32f)))
-                        SwapFor(PolyforkGalleryWindow.Open);
+                        SwapFor(REMeshGalleryWindow.Open);
 
                     if (GUILayout.Button("I have a key", GUILayout.Height(32f), GUILayout.Width(120f)))
-                        SwapFor(() => PolyforkApiKeyWindow.Open());
+                        SwapFor(() => REMeshApiKeyWindow.Open());
                 }
             }
 
@@ -256,35 +256,35 @@ namespace Polyfork.EditorTools
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (!SignedIn && GUILayout.Button("Create a free account", EditorStyles.miniButton))
-                    Application.OpenURL(PolyforkKeySettings.AccountUrl);
+                    Application.OpenURL(REMeshKeySettings.AccountUrl);
 
                 if (GUILayout.Button("Pricing", EditorStyles.miniButton))
-                    Application.OpenURL(PolyforkKeySettings.PricingUrl);
+                    Application.OpenURL(REMeshKeySettings.PricingUrl);
 
                 if (GUILayout.Button("Docs", EditorStyles.miniButton))
-                    Application.OpenURL("https://github.com/lucas-martinic/polyfork-unity-connector");
+                    Application.OpenURL("https://github.com/lucas-martinic/remesh-unity-connector");
             }
 
             /* Only worth offering when it is not already on. Drawn as a real button rather
              * than the label-styled one it was: styled as a miniLabel it rendered as grey
              * text in a corner, which reads as a footnote and was reported as missing. */
-            if (!PolyforkJsRuntimeProvider.IsAvailable)
+            if (!REMeshJsRuntimeProvider.IsAvailable)
             {
                 EditorGUILayout.Space(8f);
                 if (GUILayout.Button(
                         new GUIContent("Set up instant bakes",
-                            "Knob changes are rebuilt by polyfork.dev today: about 120 ms each, and " +
+                            "Knob changes are rebuilt by remesh.dev today: about 120 ms each, and " +
                             "metered. A local engine makes them instant and free."),
-                        PolyforkLocalBakingWindow.PrimaryButton,
+                        REMeshLocalBakingWindow.PrimaryButton,
                         GUILayout.Height(34f)))
                 {
-                    SwapFor(PolyforkLocalBakingWindow.Open);
+                    SwapFor(REMeshLocalBakingWindow.Open);
                 }
             }
 
             EditorGUILayout.Space(4f);
             EditorGUILayout.LabelField(
-                "Tools ▸ Polyfork ▸ Welcome brings this back.", EditorStyles.centeredGreyMiniLabel);
+                "Tools ▸ REMesh ▸ Welcome brings this back.", EditorStyles.centeredGreyMiniLabel);
         }
     }
 }

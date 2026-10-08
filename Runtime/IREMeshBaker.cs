@@ -4,14 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Turns an asset plus a set of knob values into a scene object.
     ///
     /// There is more than one way to do this and they differ in what they can honour:
     ///
-    ///   PolyforkServerBaker  asks polyfork.dev to rebuild the mesh. Only numeric range
+    ///   REMeshServerBaker  asks remesh.dev to rebuild the mesh. Only numeric range
     ///                        knobs are baked, so colours are re-applied locally and
     ///                        structural knobs cannot be honoured at all. Costs a bake
     ///                        against the account's allowance and a network round trip.
@@ -24,7 +24,7 @@ namespace Polyfork
     /// Which knobs are live is therefore a property of the active baker, not of the asset,
     /// which is why <see cref="Supports"/> lives here rather than on the knob.
     /// </summary>
-    public interface IPolyforkBaker
+    public interface IREMeshBaker
     {
         /// <summary>Short name for logs and UI.</summary>
         string Name { get; }
@@ -39,7 +39,7 @@ namespace Polyfork
         bool ConsumesAllowance { get; }
 
         /// <summary>Whether this baker can serve this particular asset at all.</summary>
-        bool CanBake(PolyforkAsset asset, PolyforkParams schema);
+        bool CanBake(REMeshAsset asset, REMeshParams schema);
 
         /// <summary>
         /// How this baker handles one knob.
@@ -48,21 +48,21 @@ namespace Polyfork
         /// LocalRecolor  - honoured without a rebuild.
         /// Unsupported   - cannot be honoured; UI should not draw it.
         /// </summary>
-        PolyforkKnobSupport Supports(PolyforkKnob knob);
+        REMeshKnobSupport Supports(REMeshKnob knob);
 
         /// <summary>
         /// Produces the object for these knob values. The returned root is owned by the
         /// caller. Implementations should honour cancellation, since a slider drag
         /// supersedes its own in-flight requests.
         /// </summary>
-        Task<GameObject> BakeAsync(PolyforkBakeRequest request, CancellationToken ct = default);
+        Task<GameObject> BakeAsync(REMeshBakeRequest request, CancellationToken ct = default);
     }
 
-    public sealed class PolyforkBakeRequest
+    public sealed class REMeshBakeRequest
     {
-        public PolyforkAsset Asset;
-        public PolyforkParams Schema;
-        public PolyforkKnobValues Values;
+        public REMeshAsset Asset;
+        public REMeshParams Schema;
+        public REMeshKnobValues Values;
 
         /// <summary>Optional parent for the created object.</summary>
         public Transform Parent;
@@ -77,12 +77,12 @@ namespace Polyfork
         /// </summary>
         public GameObject Reuse { get; set; }
 
-        public PolyforkBakeRequest(
-            PolyforkAsset asset, PolyforkParams schema, PolyforkKnobValues values, Transform parent = null)
+        public REMeshBakeRequest(
+            REMeshAsset asset, REMeshParams schema, REMeshKnobValues values, Transform parent = null)
         {
             Asset = asset;
             Schema = schema;
-            Values = values ?? new PolyforkKnobValues();
+            Values = values ?? new REMeshKnobValues();
             Parent = parent;
         }
     }
@@ -95,15 +95,15 @@ namespace Polyfork
     /// keeps working exactly as before. Nothing else in the connector needs to know which
     /// path is in use.
     /// </summary>
-    public sealed class PolyforkBakerRegistry
+    public sealed class REMeshBakerRegistry
     {
-        readonly List<IPolyforkBaker> _bakers = new();
+        readonly List<IREMeshBaker> _bakers = new();
 
-        public IReadOnlyList<IPolyforkBaker> Bakers => _bakers;
+        public IReadOnlyList<IREMeshBaker> Bakers => _bakers;
 
         public event Action Changed;
 
-        public void Register(IPolyforkBaker baker)
+        public void Register(IREMeshBaker baker)
         {
             if (baker == null || _bakers.Contains(baker)) return;
             _bakers.Add(baker);
@@ -111,13 +111,13 @@ namespace Polyfork
             Changed?.Invoke();
         }
 
-        public void Unregister(IPolyforkBaker baker)
+        public void Unregister(IREMeshBaker baker)
         {
             if (baker != null && _bakers.Remove(baker)) Changed?.Invoke();
         }
 
         /// <summary>Highest-priority available baker that can serve this asset, or null.</summary>
-        public IPolyforkBaker Resolve(PolyforkAsset asset, PolyforkParams schema)
+        public IREMeshBaker Resolve(REMeshAsset asset, REMeshParams schema)
         {
             foreach (var baker in _bakers)
             {
@@ -128,13 +128,13 @@ namespace Polyfork
 
         /// <summary>
         /// Knob support under whichever baker would actually serve this asset. UI should
-        /// ask this rather than reading PolyforkKnob.Support, which only describes the
+        /// ask this rather than reading REMeshKnob.Support, which only describes the
         /// server path.
         /// </summary>
-        public PolyforkKnobSupport Supports(PolyforkAsset asset, PolyforkParams schema, PolyforkKnob knob)
+        public REMeshKnobSupport Supports(REMeshAsset asset, REMeshParams schema, REMeshKnob knob)
         {
             var baker = Resolve(asset, schema);
-            return baker?.Supports(knob) ?? PolyforkKnobSupport.Unsupported;
+            return baker?.Supports(knob) ?? REMeshKnobSupport.Unsupported;
         }
     }
 }

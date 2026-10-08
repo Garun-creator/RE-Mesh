@@ -2,25 +2,25 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
-    /// Resolves the Polyfork API key from somewhere that is not the scene file.
+    /// Resolves the REMesh API key from somewhere that is not the scene file.
     ///
     /// A key typed into the inspector is serialised into the .unity asset and ships with
     /// the repo, so it is supported but treated as the last resort. The earlier sources
     /// keep the key out of version control while still working in a device build.
     ///
     /// Order:
-    ///   1. POLYFORK_API_KEY environment variable  (editor / desktop / CI)
-    ///   2. StreamingAssets/polyfork.key           (survives into an Android build)
-    ///   3. persistentDataPath/polyfork.key        (side-loadable onto a headset)
+    ///   1. REMESH_API_KEY environment variable  (editor / desktop / CI)
+    ///   2. StreamingAssets/remesh.key           (survives into an Android build)
+    ///   3. persistentDataPath/remesh.key        (side-loadable onto a headset)
     ///   4. the inspector value                    (convenient, but it is committed)
     /// </summary>
-    public static class PolyforkCredentials
+    public static class REMeshCredentials
     {
-        public const string EnvironmentVariable = "POLYFORK_API_KEY";
-        public const string KeyFileName = "polyfork.key";
+        public const string EnvironmentVariable = "REMESH_API_KEY";
+        public const string KeyFileName = "remesh.key";
 
         /// <summary>Where the resolved key came from, for logging.</summary>
         public enum Source

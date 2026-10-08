@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
     /// Minimal contract a JavaScript engine must meet to run asset modules.
@@ -16,7 +16,7 @@ namespace Polyfork
     /// that IL2CPP stripping tends to remove; Jurassic emits IL at runtime and cannot work
     /// on device at all.
     /// </summary>
-    public interface IPolyforkJsRuntime : IDisposable
+    public interface IREMeshJsRuntime : IDisposable
     {
         bool IsReady { get; }
 
@@ -53,16 +53,16 @@ namespace Polyfork
     /// It applies per asset, not globally: the module is the product, so a caller without a
     /// key has it for free assets and falls back to the server for the rest.
     /// </summary>
-    public sealed class PolyforkLocalBaker : IPolyforkBaker
+    public sealed class REMeshLocalBaker : IREMeshBaker
     {
-        readonly IPolyforkJsRuntime _runtime;
-        readonly PolyforkClient _client;
+        readonly IREMeshJsRuntime _runtime;
+        readonly REMeshClient _client;
         readonly Func<Material> _materialFactory;
         readonly HashSet<string> _loaded = new();
         readonly Dictionary<string, Task<bool>> _loading = new();
 
-        public PolyforkLocalBaker(
-            IPolyforkJsRuntime runtime, PolyforkClient client, Func<Material> materialFactory = null)
+        public REMeshLocalBaker(
+            IREMeshJsRuntime runtime, REMeshClient client, Func<Material> materialFactory = null)
         {
             _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -102,7 +102,7 @@ namespace Polyfork
         /// Only assets whose module this connection may fetch. That is what the catalogue's
         /// download field reports: free assets publish it to everyone, paid assets need a key.
         /// </summary>
-        public bool CanBake(PolyforkAsset asset, PolyforkParams schema)
+        public bool CanBake(REMeshAsset asset, REMeshParams schema)
             => asset != null
                && asset.HasModule
                && !asset.HasRig
@@ -133,12 +133,12 @@ namespace Polyfork
         /// Everything the schema declares. Running the real program means there is no knob
         /// type this cannot honour - which is the entire point of the local path.
         /// </summary>
-        public PolyforkKnobSupport Supports(PolyforkKnob knob)
-            => knob == null || knob.Type == PolyforkKnobType.Unknown
-                ? PolyforkKnobSupport.Unsupported
-                : PolyforkKnobSupport.ServerRebuild;   // "needs a re-bake" - here, a local one
+        public REMeshKnobSupport Supports(REMeshKnob knob)
+            => knob == null || knob.Type == REMeshKnobType.Unknown
+                ? REMeshKnobSupport.Unsupported
+                : REMeshKnobSupport.ServerRebuild;   // "needs a re-bake" - here, a local one
 
-        public async Task<GameObject> BakeAsync(PolyforkBakeRequest request, CancellationToken ct = default)
+        public async Task<GameObject> BakeAsync(REMeshBakeRequest request, CancellationToken ct = default)
         {
             if (request?.Asset == null) return null;
             if (!await EnsureModuleAsync(request.Asset, ct)) return null;
@@ -166,7 +166,7 @@ namespace Polyfork
                  *
                  * Remembering it means one warning, then the server baker for that asset. */
                 _unbakeable.Add(request.Asset.Id);
-                throw new PolyforkBakeUnavailableException(
+                throw new REMeshBakeUnavailableException(
                     $"The module for {request.Asset.Id} threw: {e.Message}", e);
             }
 
@@ -175,17 +175,17 @@ namespace Polyfork
             if (string.IsNullOrEmpty(payloadJson))
             {
                 _unbakeable.Add(request.Asset.Id);
-                throw new PolyforkBakeUnavailableException($"The module for {request.Asset.Id} produced nothing.");
+                throw new REMeshBakeUnavailableException($"The module for {request.Asset.Id} produced nothing.");
             }
 
             watch.Restart();
-            var payload = PolyforkMeshPayload.Parse(payloadJson);
+            var payload = REMeshMeshPayload.Parse(payloadJson);
             var decodeMs = watch.Elapsed.TotalMilliseconds;
 
             if (payload.Meshes.Count == 0)
             {
                 _unbakeable.Add(request.Asset.Id);
-                throw new PolyforkBakeUnavailableException(
+                throw new REMeshBakeUnavailableException(
                     $"The module for {request.Asset.Id} produced no meshes. Rigged assets are the known " +
                     "case: the bridge returns their hierarchy without geometry.");
             }
@@ -201,7 +201,7 @@ namespace Polyfork
             if (totalMs > SlowBakeMs)
             {
                 Debug.LogWarning(
-                    $"[Polyfork] local bake of {request.Asset.Id} took {totalMs:0} ms " +
+                    $"[REMesh] local bake of {request.Asset.Id} took {totalMs:0} ms " +
                     $"({bakeMs:0} ms in the engine, {decodeMs:0} ms decoding " +
                     $"{payloadJson.Length / 1024} KB). A server bake is about 120 ms.");
             }
@@ -212,11 +212,11 @@ namespace Polyfork
              * model changed shape, so this can only ever be faster or identical. */
             if (request.Reuse != null && payload.TryApplyTo(request.Reuse)) return request.Reuse;
 
-            return payload.ToGameObject(CreateMaterial(), request.Parent, $"Polyfork_{request.Asset.Id}");
+            return payload.ToGameObject(CreateMaterial(), request.Parent, $"REMesh_{request.Asset.Id}");
         }
 
         /// <summary>Fetches and registers the module once, coalescing concurrent requests.</summary>
-        async Task<bool> EnsureModuleAsync(PolyforkAsset asset, CancellationToken ct)
+        async Task<bool> EnsureModuleAsync(REMeshAsset asset, CancellationToken ct)
         {
             if (_loaded.Contains(asset.Id)) return true;
 
@@ -235,7 +235,7 @@ namespace Polyfork
             return ok;
         }
 
-        async Task<bool> FetchModuleAsync(PolyforkAsset asset, CancellationToken ct)
+        async Task<bool> FetchModuleAsync(REMeshAsset asset, CancellationToken ct)
         {
             try
             {
@@ -251,7 +251,7 @@ namespace Polyfork
             catch (Exception e)
             {
                 _unbakeable.Add(asset.Id);
-                Debug.LogWarning($"[Polyfork] could not load the module for {asset.Id} ({e.Message}); " +
+                Debug.LogWarning($"[REMesh] could not load the module for {asset.Id} ({e.Message}); " +
                                  "falling back to the server baker.");
                 return false;
             }
@@ -261,7 +261,7 @@ namespace Polyfork
         {
             if (_materialFactory != null) return _materialFactory();
 
-            /* A Polyfork asset keeps ALL of its colour in COLOR_0 - one material, no
+            /* A REMesh asset keeps ALL of its colour in COLOR_0 - one material, no
              * textures - and Unity's stock shaders discard vertex colour. URP/Lit,
              * URP/Simple Lit and Standard all do, which is why a locally baked asset came
              * out grey while the same asset fetched as a .glb looked right: glTFast supplies
@@ -277,7 +277,7 @@ namespace Polyfork
             Shader shader = null;
             foreach (var name in new[]
                      {
-                         "Polyfork/Vertex Color",
+                         "REMesh/Vertex Color",
                          "Universal Render Pipeline/Simple Lit",
                          "Universal Render Pipeline/Lit",
                          "Standard",
@@ -286,8 +286,8 @@ namespace Polyfork
                 var found = Shader.Find(name);
                 if (found == null) continue;      // Unity's ==, which knows about destroyed
                 shader = found;
-                if (name != "Polyfork/Vertex Color")
-                    Debug.LogWarning($"[Polyfork] falling back to \"{name}\": the package's own " +
+                if (name != "REMesh/Vertex Color")
+                    Debug.LogWarning($"[REMesh] falling back to \"{name}\": the package's own " +
                                      "vertex-colour shader was not found, so meshes will lose " +
                                      "their colours and cast no shadow.");
                 break;
@@ -295,18 +295,18 @@ namespace Polyfork
 
             if (shader == null)
             {
-                Debug.LogWarning("[Polyfork] no usable shader was found for locally baked meshes.");
+                Debug.LogWarning("[REMesh] no usable shader was found for locally baked meshes.");
                 return null;
             }
 
-            if (shader.name != "Polyfork/Vertex Color")
+            if (shader.name != "REMesh/Vertex Color")
             {
                 Debug.LogWarning(
-                    $"[Polyfork] falling back to '{shader.name}' for locally baked meshes, which ignores " +
-                    "vertex colours - the model will look grey. Polyfork/Vertex Color was not found.");
+                    $"[REMesh] falling back to '{shader.name}' for locally baked meshes, which ignores " +
+                    "vertex colours - the model will look grey. REMesh/Vertex Color was not found.");
             }
 
-            var material = new Material(shader) { name = "Polyfork Vertex Colour" };
+            var material = new Material(shader) { name = "REMesh Vertex Colour" };
             if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
             return material;
         }

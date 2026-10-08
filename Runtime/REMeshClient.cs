@@ -9,21 +9,21 @@ using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Polyfork
+namespace REMesh
 {
     /// <summary>
-    /// Typed access to the public Polyfork HTTP surface.
+    /// Typed access to the public REMesh HTTP surface.
     ///
-    /// Endpoints (all verified against polyfork.dev):
+    /// Endpoints (all verified against remesh.dev):
     ///   GET /api/assets?page=N       paged catalogue, 50 per page
     ///   GET /api/assets/{id}         one asset record
     ///   GET /api/kits                kit list
     ///   GET /cdn/{id}-params.json    machine-readable knob schema
     ///   GET /cdn/{id}-remix.glb?p={} GLB rebuilt with the given geometry knobs
     /// </summary>
-    public class PolyforkClient
+    public class REMeshClient
     {
-        public const string DefaultBaseUrl = "https://polyfork.dev";
+        public const string DefaultBaseUrl = "https://remesh.dev";
 
         readonly string _baseUrl;
 
@@ -31,7 +31,7 @@ namespace Polyfork
         /// returns every asset's public preview GLB, which is what this connector streams.</summary>
         public string ApiKey { get; set; }
 
-        public PolyforkClient(string baseUrl = DefaultBaseUrl)
+        public REMeshClient(string baseUrl = DefaultBaseUrl)
         {
             _baseUrl = baseUrl.TrimEnd('/');
         }
@@ -40,11 +40,11 @@ namespace Polyfork
 
         // ---------------------------------------------------------------- catalogue
 
-        public async Task<PolyforkPage> GetPageAsync(int page, CancellationToken ct = default)
+        public async Task<REMeshPage> GetPageAsync(int page, CancellationToken ct = default)
         {
             var json = await GetStringAsync($"{_baseUrl}/api/assets?page={page}", ct);
             var root = JObject.Parse(json);
-            var result = new PolyforkPage
+            var result = new REMeshPage
             {
                 Total = root["total"]?.Value<int>() ?? 0,
                 Page = root["page"]?.Value<int>() ?? page,
@@ -54,7 +54,7 @@ namespace Polyfork
             {
                 foreach (var t in arr)
                 {
-                    var a = PolyforkAsset.Parse(t as JObject);
+                    var a = REMeshAsset.Parse(t as JObject);
                     if (a != null) result.Assets.Add(a);
                 }
             }
@@ -63,10 +63,10 @@ namespace Polyfork
 
         /// <summary>Walks every page. The catalogue was 480 assets across 10 pages on
         /// 2026-08-13, and grows; the loop follows has_more rather than a fixed count.</summary>
-        public async Task<List<PolyforkAsset>> GetAllAssetsAsync(
+        public async Task<List<REMeshAsset>> GetAllAssetsAsync(
             IProgress<float> progress = null, CancellationToken ct = default)
         {
-            var all = new List<PolyforkAsset>();
+            var all = new List<REMeshAsset>();
             var page = 1;
             while (true)
             {
@@ -81,25 +81,25 @@ namespace Polyfork
             return all;
         }
 
-        public async Task<List<PolyforkKit>> GetKitsAsync(CancellationToken ct = default)
+        public async Task<List<REMeshKit>> GetKitsAsync(CancellationToken ct = default)
         {
             var json = await GetStringAsync($"{_baseUrl}/api/kits", ct);
-            var kits = new List<PolyforkKit>();
+            var kits = new List<REMeshKit>();
             var token = JToken.Parse(json);
             var arr = token as JArray ?? token["kits"] as JArray;
             if (arr != null)
             {
                 foreach (var t in arr)
                 {
-                    var k = PolyforkKit.Parse(t as JObject);
+                    var k = REMeshKit.Parse(t as JObject);
                     if (k != null) kits.Add(k);
                 }
             }
             return kits;
         }
 
-        public async Task<PolyforkAsset> GetAssetAsync(string id, CancellationToken ct = default)
-            => PolyforkAsset.Parse(JObject.Parse(await GetStringAsync($"{_baseUrl}/api/assets/{id}", ct)));
+        public async Task<REMeshAsset> GetAssetAsync(string id, CancellationToken ct = default)
+            => REMeshAsset.Parse(JObject.Parse(await GetStringAsync($"{_baseUrl}/api/assets/{id}", ct)));
 
         // ---------------------------------------------------------------- access
 
@@ -107,13 +107,13 @@ namespace Polyfork
         /// Current tier and remaining bake allowance. Answers without a key, so this can be
         /// called at startup to show the allowance rather than discovering it as a 429.
         /// </summary>
-        public async Task<PolyforkAccess> GetAccessAsync(CancellationToken ct = default)
-            => PolyforkAccess.Parse(await GetStringAsync($"{_baseUrl}/api/me", ct));
+        public async Task<REMeshAccess> GetAccessAsync(CancellationToken ct = default)
+            => REMeshAccess.Parse(await GetStringAsync($"{_baseUrl}/api/me", ct));
 
         // ---------------------------------------------------------------- knobs
 
-        public async Task<PolyforkParams> GetParamsAsync(string id, CancellationToken ct = default)
-            => PolyforkParams.Parse(id, await GetStringAsync(ParamsUrl(id), ct));
+        public async Task<REMeshParams> GetParamsAsync(string id, CancellationToken ct = default)
+            => REMeshParams.Parse(id, await GetStringAsync(ParamsUrl(id), ct));
 
         public string ParamsUrl(string id) => $"{_baseUrl}/cdn/{id}-params.json";
 
@@ -130,7 +130,7 @@ namespace Polyfork
         /// compares choice values strictly: a choice whose options are "12"/"15"/"18" does
         /// not match the number 12, and silently falls back to the default.
         /// </summary>
-        public string RemixGlbUrl(string id, PolyforkKnobValues values)
+        public string RemixGlbUrl(string id, REMeshKnobValues values)
             => RemixUrl(id, values?.ToJson());
 
         /// <summary>The asset at its published defaults: the baseline GLB, which is free.</summary>
@@ -181,10 +181,10 @@ namespace Polyfork
             await req.SendWebRequestAsync(ct);
 
             if (req.responseCode == 429)
-                throw new PolyforkRateLimitException(url, ParseRetryAfter(req.GetResponseHeader("Retry-After")));
+                throw new REMeshRateLimitException(url, ParseRetryAfter(req.GetResponseHeader("Retry-After")));
 
             if (req.result != UnityWebRequest.Result.Success)
-                throw new PolyforkRequestException(url, req.responseCode, req.error);
+                throw new REMeshRequestException(url, req.responseCode, req.error);
 
             // The remix endpoint reports whether it actually applied the parameters.
             // "fallback" means it served the baseline, which is what happens for knob
@@ -222,31 +222,31 @@ namespace Polyfork
             await req.SendWebRequestAsync(ct);
 
             if (req.result != UnityWebRequest.Result.Success)
-                throw new PolyforkRequestException(url, req.responseCode, req.error);
+                throw new REMeshRequestException(url, req.responseCode, req.error);
 
             return DownloadHandlerTexture.GetContent(req);
         }
     }
 
-    public class PolyforkRequestException : Exception
+    public class REMeshRequestException : Exception
     {
         public string Url { get; }
         public long StatusCode { get; }
 
-        public PolyforkRequestException(string url, long statusCode, string error)
-            : base($"Polyfork request failed ({statusCode}) for {url}: {error}")
+        public REMeshRequestException(string url, long statusCode, string error)
+            : base($"REMesh request failed ({statusCode}) for {url}: {error}")
         {
             Url = url;
             StatusCode = statusCode;
         }
     }
 
-    /// <summary>Thrown when Polyfork answers 429. Callers should degrade, not retry hard.</summary>
-    public sealed class PolyforkRateLimitException : PolyforkRequestException
+    /// <summary>Thrown when REMesh answers 429. Callers should degrade, not retry hard.</summary>
+    public sealed class REMeshRateLimitException : REMeshRequestException
     {
         public TimeSpan RetryAfter { get; }
 
-        public PolyforkRateLimitException(string url, TimeSpan retryAfter)
+        public REMeshRateLimitException(string url, TimeSpan retryAfter)
             : base(url, 429, $"rate limited; retry after {retryAfter.TotalSeconds:0}s")
         {
             RetryAfter = retryAfter;

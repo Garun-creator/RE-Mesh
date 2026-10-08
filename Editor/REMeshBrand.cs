@@ -2,23 +2,17 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Polyfork.EditorTools
+namespace MeshRA.EditorTools
 {
     /// <summary>
-    /// Polyfork's mark and accent colour for the editor windows.
-    ///
-    /// The mark is embedded as PNG bytes rather than shipped as a texture asset. A package
-    /// installed from a git URL is immutable, so its textures import with whatever settings
-    /// their .meta files carry and cannot be corrected in place by the person using it;
-    /// building the Texture2D here means the filtering and colour space are stated outright
-    /// and look the same in every project.
+    /// MESHRA's mark and accent colour for the editor windows (Team CODE SYNERGY).
     /// </summary>
-    public static class PolyforkBrand
+    public static class MeshRABrand
     {
-        /// <summary>Polyfork blue, as used on polyfork.dev.</summary>
+        /// <summary>MESHRA accent blue.</summary>
         public static readonly Color Blue = new(0x1f / 255f, 0x6f / 255f, 0xeb / 255f);
 
-        /// <summary>The same blue, lifted for readability on the dark editor skin.</summary>
+        /// <summary>Accent colour for dark editor skin.</summary>
         public static Color Accent => EditorGUIUtility.isProSkin
             ? new Color(0.36f, 0.60f, 1f)
             : Blue;
@@ -33,8 +27,7 @@ namespace Polyfork.EditorTools
         public static Texture2D Mark => _mark != null ? _mark : _mark = Decode(Mark96);
 
         /// <summary>
-        /// Header strip: the mark, the product name, and whatever the window wants to say
-        /// about its current state on the right.
+        /// Header strip: the mark, the product name (MESHRA), and team subtitle.
         /// </summary>
         public static void DrawHeader(string subtitle = null, Action right = null)
         {
@@ -44,8 +37,6 @@ namespace Polyfork.EditorTools
                 ? new Color(0.16f, 0.16f, 0.17f)
                 : new Color(0.85f, 0.86f, 0.88f));
 
-            // A hairline in brand blue, so the window reads as Polyfork's at a glance
-            // without tinting anything Unity draws.
             EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 2f, rect.width, 2f), Accent);
 
             var mark = Mark;
@@ -58,13 +49,14 @@ namespace Polyfork.EditorTools
             }
 
             var titleRect = new Rect(rect.x + 44f, rect.y + 4f, rect.width - 200f, 18f);
-            GUI.Label(titleRect, "Polyfork", EditorStyles.boldLabel);
+            GUI.Label(titleRect, "MESHRA", EditorStyles.boldLabel);
 
-            if (!string.IsNullOrEmpty(subtitle))
-            {
-                GUI.Label(new Rect(rect.x + 44f, rect.y + 19f, rect.width - 200f, 14f),
-                    subtitle, EditorStyles.miniLabel);
-            }
+            var displaySub = string.IsNullOrEmpty(subtitle) 
+                ? "In-Editor 3D Asset Studio & Automated Rigging Engine | CODE SYNERGY" 
+                : subtitle;
+            GUI.Label(new Rect(rect.x + 44f, rect.y + 19f, rect.width - 200f, 14f),
+                displaySub, EditorStyles.miniLabel);
+
 
             if (right == null) return;
 
