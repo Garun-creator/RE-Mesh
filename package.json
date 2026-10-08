@@ -1,0 +1,37 @@
+{
+  "name": "dev.remesh.unity-connector",
+  "version": "1.0.0",
+  "displayName": "RE:Mesh for Unity",
+  "description": "RE:Mesh brings a 3D asset catalogue inside the Unity editor. Browse the catalogue in an editor window, turn typed knobs to remix models live, preview the result, and import it into your project as a .glb with your colours baked in. Also ships a runtime API for streaming and remixing assets at play time. Every parameter name, label, range, option and palette is read from the asset's own machine-readable schema — nothing is invented client-side.",
+  "unity": "6000.0",
+  "unityRelease": "0f1",
+  "license": "MIT",
+  "author": {
+    "name": "Garun-creator",
+    "url": "https://github.com/Garun-creator/RE-Mesh"
+  },
+  "documentationUrl": "https://github.com/Garun-creator/RE-Mesh/blob/main/README.md",
+  "changelogUrl": "https://github.com/Garun-creator/RE-Mesh/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Garun-creator/RE-Mesh/blob/main/LICENSE.md",
+  "keywords": [
+    "remesh",
+    "3d",
+    "gltf",
+    "glb",
+    "low-poly",
+    "xr",
+    "procedural",
+    "asset-browser"
+  ],
+  "dependencies": {
+    "com.unity.cloud.gltfast": "6.19.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  },
+  "samples": [
+    {
+      "displayName": "Runtime API",
+      "description": "Loads the catalogue at play time, spawns an asset and drives a knob from script. Start here if you want RE:Mesh assets in a running game rather than imported into the project.",
+      "path": "Samples~/RuntimeApi"
+    }
+  ]
+}

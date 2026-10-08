@@ -1,0 +1,20 @@
+{
+    "name": "Polyfork.Connector.Puerts",
+    "rootNamespace": "Polyfork",
+    "references": [
+        "Polyfork.Connector",
+        "Polyfork.Connector.Editor",
+        "Polyfork.Puerts"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

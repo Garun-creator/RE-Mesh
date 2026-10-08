@@ -1,0 +1,153 @@
+// Polyfork bake bridge.
+//
+// Runs inside the embedded JavaScript engine. Flattens an asset module's THREE object
+// graph into a single JSON envelope with base64 typed arrays, so the host marshals once
+// per bake instead of once per vertex.
+//
+// Validated in Node against street-lamp-29f365: 378 triangles / 1134 vertices at
+// defaults, matching the catalogue's published count and the GLB's non-indexed layout;
+// 0.36 ms per bake including serialisation.
+//
+// Shipped as .txt so Unity imports it as a TextAsset rather than trying to compile it.
+
+/* three.js warnings that say a no-op happened, dropped before they reach the host.
+ *
+ * PuerTS routes console.warn into Unity's Console, so `toNonIndexed(): BufferGeometry is
+ * already non-indexed` - which three.js emits when a module normalises geometry that was
+ * already flat - arrived once per mesh per bake. Dragging a slider filled the Console with
+ * it, and a Console full of harmless warnings is a Console nobody reads the real one in.
+ *
+ * Matched on the exact text, not by silencing console.warn: a warning we have not read and
+ * decided about should still get through. Fix these in the modules and the entries go away.
+ */
+(function () {
+  var benign = [
+    'THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed',
+  ];
+  var warn = globalThis.console && globalThis.console.warn;
+  if (typeof warn !== 'function') return;
+
+  globalThis.console.warn = function (first) {
+    if (typeof first === 'string') {
+      for (var i = 0; i < benign.length; i++) {
+        if (first.indexOf(benign[i]) !== -1) return;
+      }
+    }
+    return warn.apply(globalThis.console, arguments);
+  };
+})();
+
+globalThis.__polyfork = (function () {
+  const modules = Object.create(null);
+
+  function toBase64(typedArray) {
+    const bytes = new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+    let binary = '';
+    const chunk = 0x8000;   // a single spread of a large array overflows the argument limit
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return __btoa(binary);
+  }
+
+  function asFloat32(attr) {
+    const a = attr.array;
+    return a instanceof Float32Array ? a : new Float32Array(a);
+  }
+
+  function register(id, moduleExports) {
+    modules[id] = moduleExports;
+  }
+
+  // Takes an asset module whose import/export statements have been rewritten by the host
+  // into plain script that builds __exports. Evaluating it in a function scope keeps each
+  // asset's declarations from colliding, and injects the one dependency they all share.
+  function registerSource(id, src) {
+    /* No named parameters beyond THREE.
+     *
+     * This used to take `mergeGeometries` as a second parameter and pass
+     * globalThis.THREE.mergeGeometries, which does not exist - it lives in
+     * BufferGeometryUtils, not in THREE. So it passed undefined, and worse, the PARAMETER
+     * SHADOWED the real global for the whole module body: defining mergeGeometries properly
+     * in the runtime would still not have reached the 518 modules that use it.
+     *
+     * The runtime defines every name a stripped import would have bound, as a global. Letting
+     * the body see those globals is the whole contract, so nothing may shadow them. */
+    var factory = new Function('THREE', src + '\n;return __exports;');
+    var exports = factory(globalThis.THREE);
+
+    /* `export default createAsset` is as valid as `export const createAsset`, and three
+     * published modules use it - pie among them, which has knobs and a params.json and simply
+     * could not bake locally because of the shape of its export. */
+    var create = exports && (typeof exports.createAsset === 'function'
+      ? exports.createAsset
+      : (typeof exports.default === 'function' ? exports.default : null));
+
+    if (!create) {
+      throw new Error('module ' + id + ' exposes no createAsset');
+    }
+
+    modules[id] = exports.createAsset === create ? exports : Object.assign({}, exports, { createAsset: create });
+  }
+
+  function has(id) {
+    return !!modules[id];
+  }
+
+  function describe(id) {
+    const m = modules[id];
+    if (!m) return '';
+    return JSON.stringify({
+      params: m.params || {},
+      presets: m.presets || {},
+      hasRig: Array.isArray(m.rig) ? m.rig.length > 0 : !!m.rig
+    });
+  }
+
+  function bake(id, paramsJson) {
+    const m = modules[id];
+    if (!m || typeof m.createAsset !== 'function') return '';
+
+    let params = {};
+    if (paramsJson) {
+      try { params = JSON.parse(paramsJson) || {}; } catch (e) { params = {}; }
+    }
+
+    const root = m.createAsset(params);
+    if (!root) return '';
+
+    root.updateMatrixWorld(true);
+
+    const meshes = [];
+    root.traverse(function (o) {
+      if (!o.isMesh || !o.geometry) return;
+
+      const g = o.geometry;
+      const position = g.getAttribute('position');
+      if (!position) return;
+
+      const color = g.getAttribute('color');
+      const normal = g.getAttribute('normal');
+
+      meshes.push({
+        name: o.name || '',
+        matrix: Array.prototype.slice.call(o.matrixWorld.elements),
+        vertexCount: position.count,
+        positions: toBase64(asFloat32(position)),
+        colors: color ? toBase64(asFloat32(color)) : null,
+        normals: normal ? toBase64(asFloat32(normal)) : null,
+        indices: g.index ? toBase64(new Uint32Array(g.index.array)) : null
+      });
+    });
+
+    return JSON.stringify({ meshes: meshes });
+  }
+
+  return {
+    register: register,
+    __registerSource: registerSource,
+    has: has,
+    bake: bake,
+    describe: describe
+  };
+})();
